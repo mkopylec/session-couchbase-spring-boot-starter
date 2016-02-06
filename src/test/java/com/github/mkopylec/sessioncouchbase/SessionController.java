@@ -21,8 +21,8 @@ public class SessionController {
     private SessionScopedBean sessionBean;
 
     @RequestMapping(value = "attribute", method = POST)
-    public void setAttribute(@RequestBody Object attribute, HttpSession session) {
-        session.setAttribute(SESSION_ATTRIBUTE_NAME, attribute);
+    public void setAttribute(@RequestBody Message dto, HttpSession session) {
+        session.setAttribute(SESSION_ATTRIBUTE_NAME, dto);
     }
 
     @RequestMapping(value = "attribute", method = GET)
@@ -31,14 +31,17 @@ public class SessionController {
     }
 
     @RequestMapping(value = "bean", method = POST)
-    public void setBean(@RequestBody SessionScopedBean bean) {
-        sessionBean.setText(bean.getText());
-        sessionBean.setNumber(bean.getNumber());
+    public void setBean(@RequestBody Message dto) {
+        sessionBean.setText(dto.getText());
+        sessionBean.setNumber(dto.getNumber());
     }
 
     @RequestMapping(value = "bean", method = GET)
-    public SessionScopedBean getBean() {
-        return sessionBean;
+    public Message getBean() {
+        Message message = new Message();
+        message.setText(sessionBean.getText());
+        message.setNumber(sessionBean.getNumber());
+        return message;
     }
 
     @RequestMapping(method = DELETE)

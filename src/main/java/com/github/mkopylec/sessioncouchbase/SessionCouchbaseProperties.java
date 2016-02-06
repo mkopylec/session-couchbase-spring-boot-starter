@@ -13,6 +13,10 @@ import static java.util.Collections.singletonList;
 public class SessionCouchbaseProperties {
 
     /**
+     * HTTP session timeout.
+     */
+    private int timeoutInSeconds = 30 * 60;
+    /**
      * Properties responsible for persistent mode behaviour.
      */
     private Persistent persistent = new Persistent();
@@ -20,6 +24,14 @@ public class SessionCouchbaseProperties {
      * Properties responsible for in-memory mode behaviour.
      */
     private InMemory inMemory = new InMemory();
+
+    public int getTimeoutInSeconds() {
+        return timeoutInSeconds;
+    }
+
+    public void setTimeoutInSeconds(int timeoutInSeconds) {
+        this.timeoutInSeconds = timeoutInSeconds;
+    }
 
     public Persistent getPersistent() {
         return persistent;

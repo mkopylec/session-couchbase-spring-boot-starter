@@ -13,7 +13,7 @@ import static org.springframework.web.context.request.RequestAttributes.REFERENC
 public class SessionScopedBean implements Serializable {
 
     private String text;
-    private int number;
+    private Integer number;
 
     public String getText() {
         return text;
@@ -23,11 +23,11 @@ public class SessionScopedBean implements Serializable {
         this.text = text;
     }
 
-    public int getNumber() {
+    public Integer getNumber() {
         return number;
     }
 
-    public void setNumber(int number) {
+    public void setNumber(Integer number) {
         this.number = number;
     }
 }
