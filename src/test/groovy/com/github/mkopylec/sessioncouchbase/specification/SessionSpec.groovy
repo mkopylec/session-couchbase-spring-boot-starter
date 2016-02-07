@@ -21,6 +21,20 @@ abstract class SessionSpec extends BasicSpec {
                 .hasBody(message)
     }
 
+    def "Should set and remove HTTP session attribute"() {
+        given:
+        def message = new Message(text: 'twisted mind', number: 100)
+        setSessionAttribute message
+
+        when:
+        deleteSessionAttribute()
+
+        then:
+        assertThat(getSessionAttribute())
+                .hasOkStatus()
+                .hasNoBody()
+    }
+
     def "Should not get HTTP session attribute when session was invalidated"() {
         given:
         def message = new Message(text: 'godzilla', number: 13)

@@ -30,6 +30,11 @@ public class SessionController {
         return session.getAttribute(SESSION_ATTRIBUTE_NAME);
     }
 
+    @RequestMapping(value = "attribute", method = DELETE)
+    public void deleteAttribute(HttpSession session) {
+        session.removeAttribute(SESSION_ATTRIBUTE_NAME);
+    }
+
     @RequestMapping(value = "bean", method = POST)
     public void setBean(@RequestBody Message dto) {
         sessionBean.setText(dto.getText());

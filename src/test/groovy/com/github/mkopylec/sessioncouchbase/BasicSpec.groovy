@@ -43,6 +43,10 @@ abstract class BasicSpec extends Specification {
         post('session/attribute', attribute)
     }
 
+    protected void deleteSessionAttribute() {
+        delete('session/attribute')
+    }
+
     protected ResponseEntity<Message> getSessionAttribute() {
         return get('session/attribute', Message)
     }
