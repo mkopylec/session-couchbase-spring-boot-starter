@@ -34,8 +34,8 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     }
 
     public CouchbaseSession(Map<String, Object> globalAttributes, Map<String, Object> namespaceAttributes) {
-        this.globalAttributes = globalAttributes == null ? new HashMap<>() : globalAttributes;
-        this.namespaceAttributes = namespaceAttributes == null ? new HashMap<>() : namespaceAttributes;
+        this.globalAttributes = globalAttributes == null ? new HashMap<String, Object>() : globalAttributes;
+        this.namespaceAttributes = namespaceAttributes == null ? new HashMap<String, Object>() : namespaceAttributes;
     }
 
     public static String globalAttributeName(String attributeName) {
