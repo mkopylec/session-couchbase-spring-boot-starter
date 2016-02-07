@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.couchbase.core.mapping.Document;
 import org.springframework.data.couchbase.core.mapping.Field;
+import org.springframework.session.MapSession;
 
 import static org.springframework.util.Base64Utils.decodeFromString;
 import static org.springframework.util.Base64Utils.encodeToString;
@@ -14,24 +15,24 @@ import static org.springframework.util.SerializationUtils.serialize;
 public class SessionEntity {
 
     @Id
-    protected String sessionId;
+    protected String key;
     @Field
     protected String session;
     @Transient
-    protected CouchbaseSession couchbaseSession;
+    protected MapSession couchbaseSession;
 
-    public SessionEntity(String sessionId, CouchbaseSession session) {
-        this.sessionId = sessionId;
+    public SessionEntity(String key, MapSession session) {
+        this.key = key;
         this.session = encodeToString(serialize(session));
     }
 
-    public String getSessionId() {
-        return sessionId;
+    public String getKey() {
+        return key;
     }
 
-    public CouchbaseSession getSession() {
+    public MapSession getSession() {
         if (couchbaseSession == null) {
-            couchbaseSession = (CouchbaseSession) deserialize(decodeFromString(session));
+            couchbaseSession = (MapSession) deserialize(decodeFromString(session));
         }
         return couchbaseSession;
     }

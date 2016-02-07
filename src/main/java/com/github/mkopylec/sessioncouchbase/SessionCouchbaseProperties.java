@@ -13,7 +13,7 @@ import static java.util.Collections.singletonList;
 public class SessionCouchbaseProperties {
 
     /**
-     * HTTP session timeout.
+     * HTTP session timeout for namespace data.
      */
     private int timeoutInSeconds = 30 * 60;
     /**
@@ -52,6 +52,10 @@ public class SessionCouchbaseProperties {
     public static class Persistent {
 
         /**
+         * HTTP session namespace under which session data must be stored.
+         */
+        private String namespace = "default";
+        /**
          * Couchbase cluster hosts.
          */
         private List<String> hosts = singletonList("localhost");
@@ -63,6 +67,14 @@ public class SessionCouchbaseProperties {
          * Couchbase bucket password.
          */
         private String password = "";
+
+        public String getNamespace() {
+            return namespace;
+        }
+
+        public void setNamespace(String namespace) {
+            this.namespace = namespace;
+        }
 
         public List<String> getHosts() {
             return hosts;
