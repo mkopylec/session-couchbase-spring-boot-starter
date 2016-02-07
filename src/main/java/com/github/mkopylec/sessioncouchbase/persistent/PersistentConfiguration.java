@@ -1,5 +1,6 @@
 package com.github.mkopylec.sessioncouchbase.persistent;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mkopylec.sessioncouchbase.SessionCouchbaseProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -25,14 +26,22 @@ public class PersistentConfiguration extends AbstractCouchbaseConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public SessionRepository mapSessionRepository(CouchbaseDao dao) {
-        return new CouchbaseSessionRepository(dao, sessionCouchbase.getPersistent().getNamespace(), sessionCouchbase.getTimeoutInSeconds());
+    public SessionRepository mapSessionRepository(CouchbaseDao dao, ObjectMapper mapper) {
+        return new CouchbaseSessionRepository(
+                dao, sessionCouchbase.getPersistent().getNamespace(), mapper, sessionCouchbase.getPersistent().isJsonSerialization(), sessionCouchbase.getTimeoutInSeconds()
+        );
     }
 
     @Bean
     @ConditionalOnMissingBean
     public SessionRepositoryFilter sessionRepositoryFilter(SessionRepository<CouchbaseSession> repository) {
         return new SessionRepositoryFilter<>(repository);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 
     @Override

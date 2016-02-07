@@ -56,6 +56,10 @@ public class SessionCouchbaseProperties {
          */
         private String namespace = "default";
         /**
+         * Flag for enabling and disabling storing HTTP session attributes in JSON form.
+         */
+        private boolean jsonSerialization = false;
+        /**
          * Couchbase cluster hosts.
          */
         private List<String> hosts = singletonList("localhost");
@@ -74,6 +78,14 @@ public class SessionCouchbaseProperties {
 
         public void setNamespace(String namespace) {
             this.namespace = namespace;
+        }
+
+        public boolean isJsonSerialization() {
+            return jsonSerialization;
+        }
+
+        public void setJsonSerialization(boolean jsonSerialization) {
+            this.jsonSerialization = jsonSerialization;
         }
 
         public List<String> getHosts() {
