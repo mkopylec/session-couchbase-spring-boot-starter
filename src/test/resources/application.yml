@@ -1,1 +1,10 @@
-session-couchbase.timeout-in-seconds: 1
+session-couchbase:
+  timeout-in-seconds: 1
+  persistent:
+    namespace: default
+    json-serialization: false
+    hosts: localhost
+    bucket-name: default
+    password:
+  inMemory:
+    enabled: false
