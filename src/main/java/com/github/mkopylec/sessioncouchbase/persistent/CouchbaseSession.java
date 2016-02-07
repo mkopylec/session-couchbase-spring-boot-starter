@@ -68,9 +68,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
 
     @Override
     public boolean isExpired() {
-        int maxInactiveInterval = (int) globalAttributes.get(MAX_INACTIVE_INTERVAL_ATTRIBUTE);
-        long lastAccessedTime = (long) globalAttributes.get(LAST_ACCESSED_TIME_ATTRIBUTE);
-        return maxInactiveInterval >= 0 && currentTimeMillis() - SECONDS.toMillis(maxInactiveInterval) >= lastAccessedTime;
+        return getMaxInactiveIntervalInSeconds() >= 0 && currentTimeMillis() - SECONDS.toMillis(getMaxInactiveIntervalInSeconds()) >= getLastAccessedTime();
     }
 
     @Override
