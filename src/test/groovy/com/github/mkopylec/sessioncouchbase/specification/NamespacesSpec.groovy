@@ -2,17 +2,16 @@ package com.github.mkopylec.sessioncouchbase.specification
 
 import com.github.mkopylec.sessioncouchbase.BasicSpec
 import com.github.mkopylec.sessioncouchbase.Message
-import org.springframework.test.context.TestPropertySource
 
 import static com.github.mkopylec.sessioncouchbase.assertions.Assertions.assertThat
 
-@TestPropertySource(properties = ['session-couchbase.persistent.json-serialization: true'])
-class JsonSerializationSpec extends BasicSpec {
+class NamespacesSpec extends BasicSpec {
 
-    def "Should set and get HTTP session attribute"() {
+    def "Should set and get HTTP session attribute only from same namespace"() {
         given:
-        def message = new Message(text: 'america', number: 1492)
-        setSessionAttribute message
+        def firstMessage = new Message(text: 'i robot', number: 6)
+        setSessionAttribute firstMessage
+        def secondMessage = new Message(text: 'you robot', number: 9)
 
         when:
         def response = getSessionAttribute()
@@ -20,6 +19,6 @@ class JsonSerializationSpec extends BasicSpec {
         then:
         assertThat(response)
                 .hasOkStatus()
-                .hasBody(message)
+                .hasBody(firstMessage)
     }
 }
