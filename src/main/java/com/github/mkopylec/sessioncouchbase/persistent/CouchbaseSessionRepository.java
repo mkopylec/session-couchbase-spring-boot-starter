@@ -64,11 +64,11 @@ public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSe
         }
 
         notNull(globalEntity, "Invalid state of HTTP session persisted in couchbase. Missing global data.");
-        notNull(namespaceEntity, "Invalid state of HTTP session persisted in couchbase. Missing local namespace data.");
 
         Map<String, Object> globalAttributes = deserializeSessionAttributes(globalEntity.getSessionAttributes());
-        Map<String, Object> namespaceAttributes = deserializeSessionAttributes(namespaceEntity.getSessionAttributes());
-        CouchbaseSession session = new CouchbaseSession(globalAttributes, namespaceAttributes);
+        String namespaceSession = namespaceEntity == null ? null : namespaceEntity.getSessionAttributes();
+        Map<String, Object> namespaceAttributes = deserializeSessionAttributes(namespaceSession);
+        CouchbaseSession session = new CouchbaseSession(id, globalAttributes, namespaceAttributes);
         if (session.isExpired()) {
             delete(id);
             return null;

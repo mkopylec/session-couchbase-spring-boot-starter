@@ -7,18 +7,33 @@ import static com.github.mkopylec.sessioncouchbase.assertions.Assertions.assertT
 
 class NamespacesSpec extends BasicSpec {
 
-    def "Should set and get HTTP session attribute only from same namespace"() {
+    def "Should set and get HTTP session attribute using the same namespace"() {
         given:
-        def firstMessage = new Message(text: 'i robot', number: 6)
-        setSessionAttribute firstMessage
-        def secondMessage = new Message(text: 'you robot', number: 9)
+        def message = new Message(text: 'i robot', number: 6)
+        setSessionAttribute message
+        startExtraApplicationInstance()
 
         when:
-        def response = getSessionAttribute()
+        def response = getSessionAttributeFromExtraInstance()
 
         then:
         assertThat(response)
                 .hasOkStatus()
-                .hasBody(firstMessage)
+                .hasBody(message)
+    }
+
+    def "Should not get HTTP session attribute using different namespace"() {
+        given:
+        def message = new Message(text: 'i robot', number: 6)
+        setSessionAttribute message
+        startExtraApplicationInstance('other_namespace')
+
+        when:
+        def response = getSessionAttributeFromExtraInstance()
+
+        then:
+        assertThat(response)
+                .hasOkStatus()
+                .hasNoBody()
     }
 }

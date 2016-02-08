@@ -1,5 +1,5 @@
 session-couchbase:
-  timeout-in-seconds: 1
+  timeout-in-seconds: 1800
   persistent:
     namespace: default
     json-serialization: false

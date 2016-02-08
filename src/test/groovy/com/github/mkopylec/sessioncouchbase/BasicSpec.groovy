@@ -24,22 +24,20 @@ abstract class BasicSpec extends Specification {
 
     @Shared
     private RestTemplate restTemplate = new RestTemplate();
-    @Shared
-    private CouchbaseMock couchbase = new CouchbaseMock('localhost', 8091, 1, 1)
     @Autowired
     private EmbeddedWebApplicationContext context
+    @Shared
     private EmbeddedWebApplicationContext extraInstanceContext
     @Autowired
     private SessionCouchbaseProperties sessionCouchbase
-    private ThreadLocal<Map<Integer, String>> cookies = new ThreadLocal<>()
+    private String currentSessionCookie
 
-    void setupSpec() {
-        couchbase.start()
+    static {
+        new CouchbaseMock('localhost', 8091, 1, 1).start()
     }
 
-    protected void startExtraApplicationInstance(String namespace) {
-        def extraInstancePort = getExtraInstancePort()
-        extraInstanceContext = (EmbeddedWebApplicationContext) run(TestApplication, "--server.port=$extraInstancePort --session-couchbase.persistent.namespace=$namespace")
+    protected void startExtraApplicationInstance(String namespace = sessionCouchbase.persistent.namespace) {
+        extraInstanceContext = (EmbeddedWebApplicationContext) run(TestApplication, "--server.port=0", "--session-couchbase.persistent.namespace=$namespace")
     }
 
     protected int getSessionTimeout() {
@@ -84,27 +82,27 @@ abstract class BasicSpec extends Specification {
 
     private void post(String path, Object body, int port = getPort()) {
         def url = createUrl(path, port)
-        HttpHeaders headers = addSessionCookie(port)
+        HttpHeaders headers = addSessionCookie()
         def request = new HttpEntity<>(body, headers)
         def response = restTemplate.postForEntity(url, request, Object)
-        saveSessionCookie(response, port)
+        saveSessionCookie(response)
     }
 
     private <T> ResponseEntity<T> get(String path, Class<T> responseType, int port = getPort()) {
         def url = createUrl(path, port)
-        HttpHeaders headers = addSessionCookie(port)
+        HttpHeaders headers = addSessionCookie()
         def request = new HttpEntity<>(headers)
         def response = restTemplate.exchange(url, GET, request, responseType) as ResponseEntity<T>
-        saveSessionCookie(response, port)
+        saveSessionCookie(response)
         return response
     }
 
     private void delete(String path, int port = getPort()) {
         def url = createUrl(path, port)
-        HttpHeaders headers = addSessionCookie(port)
+        HttpHeaders headers = addSessionCookie()
         def request = new HttpEntity<>(headers)
         def response = restTemplate.exchange(url, DELETE, request, Object)
-        saveSessionCookie(response, port)
+        saveSessionCookie(response)
     }
 
     private static GString createUrl(String path, int port) {
@@ -119,26 +117,17 @@ abstract class BasicSpec extends Specification {
         return extraInstanceContext.embeddedServletContainer.port
     }
 
-    private HttpHeaders addSessionCookie(int port) {
+    private HttpHeaders addSessionCookie() {
         def headers = new HttpHeaders()
-        if (cookies.get() != null) {
-            headers.set(COOKIE, cookies.get().get(port))
-        }
+        headers.set(COOKIE, currentSessionCookie)
         return headers
     }
 
-    private saveSessionCookie(ResponseEntity response, int port) {
-        if (cookies.get() == null) {
-            cookies.set(new HashMap<Integer, String>())
-        }
-        cookies.get().put(port, response.headers.get('Set-Cookie') as String)
+    private void saveSessionCookie(ResponseEntity response) {
+        currentSessionCookie = response.headers.get('Set-Cookie')
     }
 
     void cleanup() {
-        cookies.remove()
-    }
-
-    void cleanupSpec() {
-        couchbase.stop()
+        currentSessionCookie = null
     }
 }

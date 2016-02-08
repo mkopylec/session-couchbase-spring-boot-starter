@@ -22,7 +22,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     protected static final String LAST_ACCESSED_TIME_ATTRIBUTE = "_lastAccessedTime_";
     protected static final String MAX_INACTIVE_INTERVAL_ATTRIBUTE = "_maxInactiveInterval_";
 
-    protected final String id = randomUUID().toString();
+    protected String id = randomUUID().toString();
     protected Map<String, Object> globalAttributes = new HashMap<>();
     protected Map<String, Object> namespaceAttributes = new HashMap<>();
 
@@ -33,7 +33,8 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
         setMaxInactiveIntervalInSeconds(timeoutInSeconds);
     }
 
-    public CouchbaseSession(Map<String, Object> globalAttributes, Map<String, Object> namespaceAttributes) {
+    public CouchbaseSession(String id, Map<String, Object> globalAttributes, Map<String, Object> namespaceAttributes) {
+        this.id = id;
         this.globalAttributes = globalAttributes == null ? new HashMap<String, Object>() : globalAttributes;
         this.namespaceAttributes = namespaceAttributes == null ? new HashMap<String, Object>() : namespaceAttributes;
     }

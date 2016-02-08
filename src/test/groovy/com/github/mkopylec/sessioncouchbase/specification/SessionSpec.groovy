@@ -80,19 +80,4 @@ abstract class SessionSpec extends BasicSpec {
                 .hasOkStatus()
                 .hasBody(new Message(text: null, number: null))
     }
-
-    def "Should not get HTTP session attribute when session has expired"() {
-        given:
-        def message = new Message(text: 'power rangers', number: 123)
-        setSessionAttribute message
-        sleep(sessionTimeout + 100)
-
-        when:
-        def response = getSessionAttribute()
-
-        then:
-        assertThat(response)
-                .hasOkStatus()
-                .hasNoBody()
-    }
 }

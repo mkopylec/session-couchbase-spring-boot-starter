@@ -26,7 +26,7 @@ public class SessionController {
     }
 
     @RequestMapping(value = "attribute", method = GET)
-    public Object setAttribute(HttpSession session) {
+    public Object getAttribute(HttpSession session) {
         return session.getAttribute(SESSION_ATTRIBUTE_NAME);
     }
 
