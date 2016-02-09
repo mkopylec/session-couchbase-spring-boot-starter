@@ -45,7 +45,7 @@ public class PersistentConfiguration extends AbstractCouchbaseConfiguration {
     }
 
     @Override
-    protected List<String> bootstrapHosts() {
+    protected List<String> getBootstrapHosts() {
         return sessionCouchbase.getPersistent().getHosts();
     }
 

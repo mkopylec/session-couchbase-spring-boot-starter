@@ -1,6 +1,5 @@
 package com.github.mkopylec.sessioncouchbase
 
-import org.couchbase.mock.CouchbaseMock
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.embedded.EmbeddedWebApplicationContext
 import org.springframework.boot.test.SpringApplicationContextLoader
@@ -31,10 +30,6 @@ abstract class BasicSpec extends Specification {
     @Autowired
     private SessionCouchbaseProperties sessionCouchbase
     private String currentSessionCookie
-
-    static {
-        new CouchbaseMock('localhost', 8091, 1, 1).start()
-    }
 
     protected void startExtraApplicationInstance(String namespace = sessionCouchbase.persistent.namespace) {
         extraInstanceContext = (EmbeddedWebApplicationContext) run(TestApplication, "--server.port=0", "--session-couchbase.persistent.namespace=$namespace")
