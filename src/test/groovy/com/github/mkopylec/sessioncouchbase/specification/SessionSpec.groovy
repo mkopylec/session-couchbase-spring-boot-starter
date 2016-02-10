@@ -70,7 +70,6 @@ abstract class SessionSpec extends BasicSpec {
         def message = new Message(text: 'mariusz kopylec', number: 1)
         setSessionBean message
         invalidateSession()
-        sleep(1000);//TODO there is some async magic in removing data from couchbase mock :(
 
         when:
         def response = getSessionBean()
