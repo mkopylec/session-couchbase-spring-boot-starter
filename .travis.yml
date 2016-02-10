@@ -6,6 +6,7 @@ before_install:
   - sudo apt-get install -y libssl1.0.0
   - sudo wget http://packages.couchbase.com/releases/3.0.1/couchbase-server-community_3.0.1-ubuntu12.04_amd64.deb
   - sudo dpkg -i couchbase-server-community_3.0.1-ubuntu12.04_amd64.deb
+  - curl -X POST -i http://localhost:8091/nodes/self/controller/settings
 script:
   - ./gradlew test -i --stacktrace
 after_success:
