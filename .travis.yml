@@ -6,8 +6,14 @@ before_install:
   - sudo apt-get install -y libssl1.0.0
   - sudo wget http://packages.couchbase.com/releases/3.0.1/couchbase-server-community_3.0.1-ubuntu12.04_amd64.deb
   - sudo dpkg -i couchbase-server-community_3.0.1-ubuntu12.04_amd64.deb
-  - curl -X POST -i http://localhost:8091/nodes/self/controller/settings
+  - sudo /opt/couchbase/bin/couchbase-cli cluster-init \
+    --cluster-username=Administrator \
+    --cluster-password=password \
+    --cluster-port=8091 \
+    --cluster-ramsize=512 \
+    --cluster-index-ramsize=512 \
+    --services=data,index,query
 script:
-  - ./gradlew test -i --stacktrace
+  - ./gradlew test -i
 after_success:
   - ./gradlew jacocoTestReport coveralls
