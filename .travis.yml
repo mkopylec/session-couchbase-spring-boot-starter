@@ -1,6 +1,8 @@
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y libssl1.0.0
+  - sudo apt-get install -y libc6
+  - sudo apt-get install -y libstdc++6
   - sudo wget http://packages.couchbase.com/releases/4.1.0/couchbase-server-enterprise_4.1.0-ubuntu14.04_amd64.deb
   - sudo dpkg -i couchbase-server-enterprise_4.1.0-ubuntu14.04_amd64.deb
 language: java
