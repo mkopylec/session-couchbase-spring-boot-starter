@@ -3,4 +3,5 @@ dependencies:
     - sudo apt-get -qq update
     - sudo apt-get install -y libssl1.0.0
     - sudo wget http://packages.couchbase.com/releases/4.1.0/couchbase-server-enterprise_4.1.0-ubuntu14.04_amd64.deb
+    - sudo /etc/init.d/couchbase-server stop
     - sudo dpkg -i couchbase-server-enterprise_4.1.0-ubuntu14.04_amd64.deb
