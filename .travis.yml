@@ -5,8 +5,8 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y libssl1.0.0
   - sudo wget http://packages.couchbase.com/releases/3.0.1/couchbase-server-community_3.0.1-ubuntu12.04_amd64.deb
-  - sudo iptables -I INPUT -p tcp --dport 8091 --syn -j ACCEPT
-  - sudo iptables -I INPUT -p tcp --dport 11210 --syn -j ACCEPT
+  - sudo iptables -I INPUT -p tcp --match multiport --dports 11211,11210,11209,4369,8091,8092,18091,18092,11214,11215 --syn -j ACCEPT
+  - sudo iptables -I INPUT -p tcp --match multiport --dports 21100:21299 --syn -j ACCEPT
   - sudo dpkg -i couchbase-server-community_3.0.1-ubuntu12.04_amd64.deb
   - sudo /opt/couchbase/bin/couchbase-cli cluster-init --cluster 127.0.0.1:8091 --cluster-username=Administrator --cluster-password=password --cluster-port=8091 --cluster-ramsize=256 -u Administrator -p password
 script:
