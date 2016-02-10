@@ -6,7 +6,7 @@ before_install:
   - sudo apt-get install -y libssl1.0.0
   - sudo wget http://packages.couchbase.com/releases/3.0.1/couchbase-server-community_3.0.1-ubuntu12.04_amd64.deb
   - sudo dpkg -i couchbase-server-community_3.0.1-ubuntu12.04_amd64.deb
-  - sudo /opt/couchbase/bin/couchbase-cli cluster-init --cluster-username=Administrator --cluster-password=password --cluster-port=8091 --cluster-ramsize=256
+  - sudo /opt/couchbase/bin/couchbase-cli cluster-init --cluster localhost:8091 --cluster-username=Administrator --cluster-password=password --cluster-port=8091 --cluster-ramsize=256
 script:
   - ./gradlew test -i
 after_success:
