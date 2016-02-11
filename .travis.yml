@@ -9,7 +9,8 @@ before_install:
   - sudo iptables -I INPUT -p tcp --match multiport --dports 21100:21299 --syn -j ACCEPT
   - sudo dpkg -i couchbase-server-community_3.0.1-ubuntu12.04_amd64.deb
   - HOSTNAME=`hostname -f`
-  - sudo /opt/couchbase/bin/couchbase-cli cluster-init --cluster $HOSTNAME:8091 --cluster-username=Administrator --cluster-password=password --cluster-port=8091 --cluster-ramsize=256 -u Administrator -p password || true
+  - sudo /opt/couchbase/bin/couchbase-cli cluster-init -c $HOSTNAME:8091 -u Administrator -p password --cluster-ramsize=256 || true
+  - sudo /opt/couchbase/bin/couchbase-cli bucket-create -c $HOSTNAME:8091 -u Administrator -p password --bucket=default --bucket-ramsize=256 --bucket-replica=1
 script:
   - ./gradlew test -i
 after_success:
