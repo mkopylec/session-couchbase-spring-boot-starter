@@ -1,5 +1,7 @@
-machine.services:
+machine:
+  services:
     - couchbase-server
-dependencies.pre:
+dependencies:
+  pre:
     - /opt/couchbase/bin/couchbase-cli cluster-init -c localhost:8091 -u Administrator -p password --cluster-ramsize=256
     - /opt/couchbase/bin/couchbase-cli bucket-create -c localhost:8091 -u Administrator -p password --bucket=default --bucket-ramsize=256 --bucket-replica=1
