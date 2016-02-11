@@ -4,4 +4,4 @@ machine:
 dependencies:
   pre:
     - /opt/couchbase/bin/couchbase-cli cluster-init -c localhost:8091 -u Administrator -p password
-    - /opt/couchbase/bin/couchbase-cli bucket-create -c localhost:8091 -u Administrator -p password --bucket=default --bucket-replica=0
+    - /opt/couchbase/bin/couchbase-cli bucket-create -c localhost:8091 -u Administrator -p password --bucket=default --bucket-ramsize=256 --bucket-replica=0
