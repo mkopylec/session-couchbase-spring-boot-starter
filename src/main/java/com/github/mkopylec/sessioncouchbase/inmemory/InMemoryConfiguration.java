@@ -22,7 +22,7 @@ public class InMemoryConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public SessionRepository mapSessionRepository() {
+    public SessionRepository sessionRepository() {
         MapSessionRepository repository = new MapSessionRepository();
         repository.setDefaultMaxInactiveInterval(sessionCouchbase.getTimeoutInSeconds());
         return repository;

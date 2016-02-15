@@ -1,37 +1,38 @@
 package com.github.mkopylec.sessioncouchbase.persistent;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.session.SessionRepository;
 
-import java.io.IOException;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import static java.lang.System.currentTimeMillis;
+import static org.apache.commons.lang3.StringUtils.removeStart;
+import static org.apache.commons.lang3.StringUtils.startsWith;
 import static org.springframework.util.Assert.hasText;
 import static org.springframework.util.Assert.notNull;
 import static org.springframework.util.Base64Utils.decodeFromString;
 import static org.springframework.util.Base64Utils.encodeToString;
+import static org.springframework.util.ClassUtils.isPrimitiveOrWrapper;
 import static org.springframework.util.SerializationUtils.deserialize;
 import static org.springframework.util.SerializationUtils.serialize;
 
 public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSession> {
 
     protected static final String SESSION_KEY_SEPARATOR = "###";
+    protected static final String SERIALIZED_OBJECT_PREFIX = "_$object=";
 
     protected final CouchbaseDao dao;
     protected final ObjectMapper mapper;
-    protected final boolean jsonSerialization;
     protected final String namespace;
     protected final int sessionTimeout;
 
-    public CouchbaseSessionRepository(CouchbaseDao dao, String namespace, ObjectMapper mapper, boolean jsonSerialization, int sessionTimeout) {
+    public CouchbaseSessionRepository(CouchbaseDao dao, String namespace, ObjectMapper mapper, int sessionTimeout) {
         notNull(dao, "Missing couchbase data access object");
         notNull(mapper, "Missing JSON object mapper");
         hasText(namespace, "Empty HTTP session namespace");
         this.dao = dao;
         this.mapper = mapper;
-        this.jsonSerialization = jsonSerialization;
         this.namespace = namespace.trim();
         this.sessionTimeout = sessionTimeout;
     }
@@ -44,11 +45,11 @@ public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSe
     @Override
     public void save(CouchbaseSession session) {
         String namespaceSessionKey = getNamespaceSessionKey(session.getId());
-        String namespaceAttributes = serializeSessionAttributes(session.getNamespaceAttributes());
-        SessionEntity namespaceEntity = new SessionEntity(namespaceSessionKey, namespaceAttributes);
+        serializeSessionAttributes(session.getNamespaceAttributes());
+        SessionEntity namespaceEntity = new SessionEntity(namespaceSessionKey, session.getNamespaceAttributes());
 
-        String globalAttributes = serializeSessionAttributes(session.getGlobalAttributes());
-        SessionEntity globalEntity = new SessionEntity(session.getId(), globalAttributes);
+        serializeSessionAttributes(session.getGlobalAttributes());
+        SessionEntity globalEntity = new SessionEntity(session.getId(), session.getGlobalAttributes());
 
         dao.save(namespaceEntity);
         dao.save(globalEntity);
@@ -65,10 +66,10 @@ public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSe
 
         notNull(globalEntity, "Invalid state of HTTP session persisted in couchbase. Missing global data.");
 
-        Map<String, Object> globalAttributes = deserializeSessionAttributes(globalEntity.getSessionAttributes());
-        String namespaceSession = namespaceEntity == null ? null : namespaceEntity.getSessionAttributes();
-        Map<String, Object> namespaceAttributes = deserializeSessionAttributes(namespaceSession);
-        CouchbaseSession session = new CouchbaseSession(id, globalAttributes, namespaceAttributes);
+        deserializeSessionAttributes(globalEntity.getSessionAttributes());
+        Map<String, Object> namespaceAttributes = namespaceEntity == null ? null : namespaceEntity.getSessionAttributes();
+        deserializeSessionAttributes(namespaceAttributes);
+        CouchbaseSession session = new CouchbaseSession(id, globalEntity.getSessionAttributes(), namespaceAttributes);
         if (session.isExpired()) {
             delete(id);
             return null;
@@ -88,26 +89,32 @@ public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSe
         return id + SESSION_KEY_SEPARATOR + namespace;
     }
 
-    protected String serializeSessionAttributes(Map<String, Object> attributes) {
-        if (jsonSerialization) {
-            try {
-                return mapper.writeValueAsString(attributes);
-            } catch (JsonProcessingException ex) {
-                throw new IllegalStateException("Error serializing HTTP session attributes to JSON", ex);
+    protected void serializeSessionAttributes(Map<String, Object> attributes) {
+        for (Entry<String, Object> attribute : attributes.entrySet()) {
+            if (isObject(attribute)) {
+                String serializedAttribute = encodeToString(serialize(attribute.getValue()));
+                attribute.setValue(SERIALIZED_OBJECT_PREFIX + serializedAttribute);
             }
         }
-        return encodeToString(serialize(attributes));
     }
 
-    @SuppressWarnings("unchecked")
-    protected Map<String, Object> deserializeSessionAttributes(String attributes) {
-        if (jsonSerialization) {
-            try {
-                return mapper.readValue(attributes, Map.class);
-            } catch (IOException ex) {
-                throw new IllegalStateException("Error deserializing HTTP session attributes from JSON", ex);
+    protected boolean isObject(Entry<String, Object> attribute) {
+        return !isPrimitiveOrWrapper(attribute.getValue().getClass());
+    }
+
+    protected void deserializeSessionAttributes(Map<String, Object> attributes) {
+        if (attributes != null) {
+            for (Entry<String, Object> attribute : attributes.entrySet()) {
+                if (isSerializedObject(attribute)) {
+                    String content = removeStart(attribute.getValue().toString(), SERIALIZED_OBJECT_PREFIX);
+                    Object deserializedAttribute = deserialize(decodeFromString(content));
+                    attribute.setValue(deserializedAttribute);
+                }
             }
         }
-        return (Map<String, Object>) deserialize(decodeFromString(attributes));
+    }
+
+    protected boolean isSerializedObject(Entry<String, Object> attribute) {
+        return attribute.getValue() != null && attribute.getValue() instanceof String && startsWith(attribute.getValue().toString(), SERIALIZED_OBJECT_PREFIX);
     }
 }

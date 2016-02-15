@@ -4,20 +4,22 @@ import com.couchbase.client.java.repository.annotation.Field;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.couchbase.core.mapping.Document;
 
+import java.util.Map;
+
 @Document
 public class SessionEntity {
 
     @Id
     protected String key;
     @Field
-    protected String sessionAttributes;
+    protected Map<String, Object> sessionAttributes;
 
-    public SessionEntity(String key, String sessionAttributes) {
+    public SessionEntity(String key, Map<String, Object> sessionAttributes) {
         this.key = key;
         this.sessionAttributes = sessionAttributes;
     }
 
-    public String getSessionAttributes() {
+    public Map<String, Object> getSessionAttributes() {
         return sessionAttributes;
     }
 }

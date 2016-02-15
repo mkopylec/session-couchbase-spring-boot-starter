@@ -26,9 +26,9 @@ public class PersistentConfiguration extends AbstractCouchbaseConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public SessionRepository mapSessionRepository(CouchbaseDao dao, ObjectMapper mapper) {
+    public SessionRepository sessionRepository(CouchbaseDao dao, ObjectMapper mapper) {
         return new CouchbaseSessionRepository(
-                dao, sessionCouchbase.getPersistent().getNamespace(), mapper, sessionCouchbase.getPersistent().isJsonSerialization(), sessionCouchbase.getTimeoutInSeconds()
+                dao, sessionCouchbase.getPersistent().getNamespace(), mapper, sessionCouchbase.getTimeoutInSeconds()
         );
     }
 
