@@ -2,6 +2,8 @@
 [![Circle CI](https://circleci.com/gh/mkopylec/session-couchbase-spring-boot-starter.svg?style=shield)](https://circleci.com/gh/mkopylec/session-couchbase-spring-boot-starter)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.mkopylec/session-couchbase-spring-boot-starter/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.github.mkopylec/session-couchbase-spring-boot-starter)
 
+For more info about couchbase click [here](http://www.couchbase.com/)
+
 ## Installing
 
 ```gradle
