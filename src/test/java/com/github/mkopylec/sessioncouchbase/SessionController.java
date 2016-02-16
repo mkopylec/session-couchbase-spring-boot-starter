@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
 
+import static com.github.mkopylec.sessioncouchbase.persistent.CouchbaseSession.globalAttributeName;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
@@ -25,9 +25,19 @@ public class SessionController {
         session.setAttribute(SESSION_ATTRIBUTE_NAME, dto);
     }
 
-    @RequestMapping(value = "attribute", method = GET)
+    @RequestMapping(value = "attribute/global", method = POST)
+    public void setGlobalAttribute(@RequestBody Message dto, HttpSession session) {
+        session.setAttribute(globalAttributeName(SESSION_ATTRIBUTE_NAME), dto);
+    }
+
+    @RequestMapping("attribute")
     public Object getAttribute(HttpSession session) {
         return session.getAttribute(SESSION_ATTRIBUTE_NAME);
+    }
+
+    @RequestMapping("attribute/global")
+    public Object getGlobalAttribute(HttpSession session) {
+        return session.getAttribute(globalAttributeName(SESSION_ATTRIBUTE_NAME));
     }
 
     @RequestMapping(value = "attribute", method = DELETE)
@@ -41,7 +51,7 @@ public class SessionController {
         sessionBean.setNumber(dto.getNumber());
     }
 
-    @RequestMapping(value = "bean", method = GET)
+    @RequestMapping("bean")
     public Message getBean() {
         Message message = new Message();
         message.setText(sessionBean.getText());

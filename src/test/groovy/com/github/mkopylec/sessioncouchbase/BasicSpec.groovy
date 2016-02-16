@@ -43,6 +43,10 @@ abstract class BasicSpec extends Specification {
         post('session/attribute', attribute, getPort())
     }
 
+    protected void setGlobalSessionAttribute(Message attribute) {
+        post('session/attribute/global', attribute, getPort())
+    }
+
     protected void setSessionAttributeToExtraInstance(Message attribute) {
         post('session/attribute', attribute, getExtraInstancePort())
     }
@@ -61,6 +65,10 @@ abstract class BasicSpec extends Specification {
 
     protected ResponseEntity<Message> getSessionAttributeFromExtraInstance() {
         return get('session/attribute', Message, getExtraInstancePort())
+    }
+
+    protected ResponseEntity<Message> getGlobalSessionAttributeFromExtraInstance() {
+        return get('session/attribute/global', Message, getExtraInstancePort())
     }
 
     protected void setSessionBean(Message attribute) {

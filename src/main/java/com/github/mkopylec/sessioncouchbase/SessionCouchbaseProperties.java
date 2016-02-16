@@ -52,7 +52,7 @@ public class SessionCouchbaseProperties {
     public static class Persistent {
 
         /**
-         * HTTP session namespace under which session data must be stored.
+         * HTTP session application namespace under which session data must be stored.
          */
         private String namespace = "default";
         /**

@@ -5,5 +5,5 @@ session-couchbase:
     hosts: localhost
     bucket-name: default
     password:
-  inMemory:
+  in-memory:
     enabled: false
