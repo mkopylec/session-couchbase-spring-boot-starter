@@ -88,7 +88,7 @@ There are no namespaces in in-memory mode.
 
 ```yaml
 session-couchbase:
-    timeout-in-seconds: 1800 # HTTP session timeout for namespace data.
+    timeout-in-seconds: 1800 # HTTP session timeout.
     persistent:
         namespace: default # HTTP session application namespace under which session data must be stored.
         hosts: localhost # Couchbase cluster hosts.

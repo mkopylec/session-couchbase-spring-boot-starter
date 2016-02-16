@@ -13,7 +13,7 @@ import static java.util.Collections.singletonList;
 public class SessionCouchbaseProperties {
 
     /**
-     * HTTP session timeout for namespace data.
+     * HTTP session timeout.
      */
     private int timeoutInSeconds = 30 * 60;
     /**
