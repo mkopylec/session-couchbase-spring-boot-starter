@@ -7,6 +7,7 @@ dependencies:
     - /opt/couchbase/bin/couchbase-cli bucket-create -c localhost:8091 -u Administrator -p password --bucket=default --bucket-ramsize=256 --bucket-replica=0
 test:
   post:
+    - CI_NAME=circleci
     - ./gradlew jacocoTestReport coveralls
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
     - find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
