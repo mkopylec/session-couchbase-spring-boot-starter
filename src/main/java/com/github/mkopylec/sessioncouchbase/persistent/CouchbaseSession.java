@@ -90,6 +90,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
 
     @Override
     public Set<String> getAttributeNames() {
+        //TODO include global attrs? change session id test need to be created
         return namespaceAttributes.keySet();
     }
 
@@ -107,6 +108,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     public void removeAttribute(String attributeName) {
         checkAttributeName(attributeName);
         if (isGlobal(attributeName)) {
+            //TODO remove global attr test
             globalAttributes.remove(getAttributeName(attributeName));
         } else {
             namespaceAttributes.remove(attributeName);
