@@ -1,8 +1,7 @@
 plugins {
     id 'groovy'
     id 'maven-publish'
-    id 'jacoco'
-    id 'nebula.optional-base' version '3.0.3'
+        id 'nebula.optional-base' version '3.0.3'
     id 'com.github.kt3k.coveralls' version '2.6.3'
     id 'maven'
     id 'signing'
@@ -116,11 +115,3 @@ publishing {
         }
     }
 }
-
-jacocoTestReport {
-    reports {
-        xml.enabled = true
-        html.enabled = true
-    }
-}
-
