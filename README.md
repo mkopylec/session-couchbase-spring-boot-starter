@@ -56,6 +56,7 @@ To access application namespace just pass an attribute name:
 ...
 @RequestMapping("uri")
 public void doSomething(HttpSession session) {
+    session.setAttribute("name");
     session.getAttribute("name");
     ...
 }
@@ -68,6 +69,7 @@ To access global attributes create an attribute name using `CouchbaseSession.glo
 @RequestMapping("uri")
 public void doSomething(HttpSession session) {
     String attributeName = CouchbaseSession.globalAttributeName("name");
+    session.setAttribute(attributeName);
     session.getAttribute(attributeName);
     ...
 }
@@ -99,6 +101,9 @@ session-couchbase:
     in-memory:
         enabled: false # Flag for enabling and disabling in-memory mode.
 ```
+
+## Examples
+Go to [sample controller](https://github.com/mkopylec/session-couchbase-spring-boot-starter/blob/master/src/test/java/com/github/mkopylec/sessioncouchbase/SessionController.java) to see more examples.
 
 ## License
 Session Couchbase Spring Boot Starter is published under [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
