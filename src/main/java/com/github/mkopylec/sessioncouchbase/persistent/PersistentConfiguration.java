@@ -9,8 +9,11 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.couchbase.config.AbstractCouchbaseConfiguration;
+import org.springframework.data.couchbase.core.CouchbaseTemplate;
 import org.springframework.data.couchbase.repository.config.EnableCouchbaseRepositories;
 import org.springframework.session.SessionRepository;
+import org.springframework.session.web.http.CookieHttpSessionStrategy;
+import org.springframework.session.web.http.MultiHttpSessionStrategy;
 import org.springframework.session.web.http.SessionRepositoryFilter;
 
 import java.util.List;
@@ -26,6 +29,18 @@ public class PersistentConfiguration extends AbstractCouchbaseConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    public CouchbaseDao couchbaseDao(CouchbaseTemplate couchbase) {
+        return new CouchbaseDao(couchbase);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public MultiHttpSessionStrategy multiHttpSessionStrategy(CouchbaseDao dao) {
+        return new DelegatingSessionStrategy(new CookieHttpSessionStrategy(), dao);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
     public SessionRepository sessionRepository(CouchbaseDao dao, ObjectMapper mapper) {
         return new CouchbaseSessionRepository(
                 dao, sessionCouchbase.getPersistent().getNamespace(), mapper, sessionCouchbase.getTimeoutInSeconds()
@@ -34,8 +49,10 @@ public class PersistentConfiguration extends AbstractCouchbaseConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public SessionRepositoryFilter sessionRepositoryFilter(SessionRepository<CouchbaseSession> repository) {
-        return new SessionRepositoryFilter<>(repository);
+    public SessionRepositoryFilter sessionRepositoryFilter(SessionRepository<CouchbaseSession> repository, MultiHttpSessionStrategy strategy) {
+        SessionRepositoryFilter<CouchbaseSession> filter = new SessionRepositoryFilter<>(repository);
+        filter.setHttpSessionStrategy(strategy);
+        return filter;
     }
 
     @Bean

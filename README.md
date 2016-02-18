@@ -95,7 +95,7 @@ There are no namespaces in in-memory mode.
 session-couchbase:
     timeout-in-seconds: 1800 # HTTP session timeout.
     persistent:
-        namespace: default # HTTP session application namespace under which session data must be stored.
+        namespace: # HTTP session application namespace under which session data must be stored.
         hosts: localhost # Couchbase cluster hosts.
         bucket-name: default # Couchbase bucket name where session data must be stored.
         password: # Couchbase bucket password.

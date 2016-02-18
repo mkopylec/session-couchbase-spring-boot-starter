@@ -39,14 +39,12 @@ abstract class SessionSpec extends BasicSpec {
         given:
         def message = new Message(text: 'godzilla', number: 13)
         setSessionAttribute message
-        invalidateSession()
-        sleep(1000);//TODO there is some async magic in removing data from couchbase mock :(
 
         when:
-        def response = getSessionAttribute()
+        invalidateSession()
 
         then:
-        assertThat(response)
+        assertThat(getSessionAttribute())
                 .hasOkStatus()
                 .hasNoBody()
     }

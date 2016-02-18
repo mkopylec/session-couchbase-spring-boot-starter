@@ -16,6 +16,7 @@ import static org.springframework.boot.SpringApplication.run
 import static org.springframework.http.HttpHeaders.COOKIE
 import static org.springframework.http.HttpMethod.DELETE
 import static org.springframework.http.HttpMethod.GET
+import static org.springframework.http.HttpMethod.PUT
 
 @WebIntegrationTest(randomPort = true)
 @ContextConfiguration(loader = SpringApplicationContextLoader, classes = TestApplication)
@@ -83,6 +84,10 @@ abstract class BasicSpec extends Specification {
         delete('session')
     }
 
+    protected void changeSessionId() {
+        put('session/id')
+    }
+
     private void post(String path, Object body, int port = getPort()) {
         def url = createUrl(path, port)
         HttpHeaders headers = addSessionCookie()
@@ -108,6 +113,15 @@ abstract class BasicSpec extends Specification {
         saveSessionCookie(response)
     }
 
+    private ResponseEntity<Object> put(String path, int port = getPort()) {
+        def url = createUrl(path, port)
+        HttpHeaders headers = addSessionCookie()
+        def request = new HttpEntity<>(headers)
+        def response = restTemplate.exchange(url, PUT, request, Object)
+        saveSessionCookie(response)
+        return response
+    }
+
     private static GString createUrl(String path, int port) {
         return "http://localhost:$port/$path"
     }
@@ -127,7 +141,10 @@ abstract class BasicSpec extends Specification {
     }
 
     private void saveSessionCookie(ResponseEntity response) {
-        currentSessionCookie = response.headers.get('Set-Cookie')
+        def cookie = response.headers.get('Set-Cookie')
+        if (cookie != null) {
+            currentSessionCookie = cookie;
+        }
     }
 
     void cleanup() {

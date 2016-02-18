@@ -5,11 +5,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import static com.github.mkopylec.sessioncouchbase.persistent.CouchbaseSession.globalAttributeName;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
 @RestController
 @RequestMapping("session")
@@ -62,5 +64,10 @@ public class SessionController {
     @RequestMapping(method = DELETE)
     public void invalidateSession(HttpSession session) {
         session.invalidate();
+    }
+
+    @RequestMapping(value = "id", method = PUT)
+    public void changeSessionId(HttpServletRequest request) {
+        request.changeSessionId();
     }
 }

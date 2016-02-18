@@ -1,7 +1,7 @@
 session-couchbase:
   timeout-in-seconds: 1800
   persistent:
-    namespace: default
+    namespace: test_application
     hosts: localhost
     bucket-name: default
     password:

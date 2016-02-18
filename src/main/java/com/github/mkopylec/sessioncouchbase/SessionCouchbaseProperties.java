@@ -54,7 +54,7 @@ public class SessionCouchbaseProperties {
         /**
          * HTTP session application namespace under which session data must be stored.
          */
-        private String namespace = "default";
+        private String namespace;
         /**
          * Couchbase cluster hosts.
          */

@@ -4,10 +4,13 @@ import org.springframework.session.ExpiringSession;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static java.lang.Math.round;
 import static java.lang.System.currentTimeMillis;
+import static java.util.Collections.unmodifiableSet;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.springframework.util.Assert.hasText;
@@ -18,9 +21,9 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     private static final long serialVersionUID = 1L;
 
     protected static final String GLOBAL_ATTRIBUTE_NAME_PREFIX = "_#global#_";
-    protected static final String CREATION_TIME_ATTRIBUTE = "_creationTime_";
-    protected static final String LAST_ACCESSED_TIME_ATTRIBUTE = "_lastAccessedTime_";
-    protected static final String MAX_INACTIVE_INTERVAL_ATTRIBUTE = "_maxInactiveInterval_";
+    protected static final String CREATION_TIME_ATTRIBUTE = "$creationTime";
+    protected static final String LAST_ACCESSED_TIME_ATTRIBUTE = "$lastAccessedTime";
+    protected static final String MAX_INACTIVE_INTERVAL_ATTRIBUTE = "$maxInactiveInterval";
 
     protected String id = randomUUID().toString();
     protected Map<String, Object> globalAttributes = new HashMap<>();
@@ -45,12 +48,12 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
 
     @Override
     public long getCreationTime() {
-        return (long) globalAttributes.get(CREATION_TIME_ATTRIBUTE);
+        return round((double) globalAttributes.get(CREATION_TIME_ATTRIBUTE));
     }
 
     @Override
     public long getLastAccessedTime() {
-        return (long) globalAttributes.get(LAST_ACCESSED_TIME_ATTRIBUTE);
+        return round((double) globalAttributes.get(LAST_ACCESSED_TIME_ATTRIBUTE));
     }
 
     public void setLastAccessedTime(long lastAccessedTime) {
@@ -90,8 +93,10 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
 
     @Override
     public Set<String> getAttributeNames() {
-        //TODO include global attrs? change session id test need to be created
-        return namespaceAttributes.keySet();
+        Set<String> attributesNames = new HashSet<>();
+        attributesNames.addAll(globalAttributes.keySet());
+        attributesNames.addAll(namespaceAttributes.keySet());
+        return unmodifiableSet(attributesNames);
     }
 
     @Override

@@ -10,16 +10,20 @@ import java.util.Map;
 public class SessionEntity {
 
     @Id
-    protected String key;
+    protected String id;
     @Field
-    protected Map<String, Object> sessionAttributes;
+    protected Map<String, Map<String, Object>> data;
 
-    public SessionEntity(String key, Map<String, Object> sessionAttributes) {
-        this.key = key;
-        this.sessionAttributes = sessionAttributes;
+    public SessionEntity(String id, Map<String, Map<String, Object>> data) {
+        this.id = id;
+        this.data = data;
     }
 
-    public Map<String, Object> getSessionAttributes() {
-        return sessionAttributes;
+    public String getId() {
+        return id;
+    }
+
+    public Map<String, Map<String, Object>> getData() {
+        return data;
     }
 }
