@@ -1,6 +1,6 @@
 # Session Couchbase Spring Boot Starter
-[![Circle CI](https://circleci.com/gh/mkopylec/session-couchbase-spring-boot-starter.svg?style=shield)](https://circleci.com/gh/mkopylec/session-couchbase-spring-boot-starter)
-[![codecov.io](https://codecov.io/github/mkopylec/session-couchbase-spring-boot-starter/coverage.svg?branch=master)](https://codecov.io/github/mkopylec/session-couchbase-spring-boot-starter?branch=master)
+[![Build Status](https://travis-ci.org/mkopylec/session-couchbase-spring-boot-starter.svg?branch=master)](https://travis-ci.org/mkopylec/session-couchbase-spring-boot-starter)
+[![Coverage Status](https://coveralls.io/repos/github/mkopylec/session-couchbase-spring-boot-starter/badge.svg?branch=master)](https://coveralls.io/github/mkopylec/session-couchbase-spring-boot-starter?branch=master)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.mkopylec/session-couchbase-spring-boot-starter/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.github.mkopylec/session-couchbase-spring-boot-starter)
 
 For more info about couchbase click [here](http://www.couchbase.com/)
@@ -75,6 +75,8 @@ public void doSomething(HttpSession session) {
     ...
 }
 ```
+
+When changing HTTP session ID every attribute is copied to the new session, no matter what namespace it belongs.
 
 ### In-memory usage
 Enable in-memory mode in _application.yml_ file:
