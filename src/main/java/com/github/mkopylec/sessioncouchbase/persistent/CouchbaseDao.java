@@ -20,12 +20,12 @@ public class CouchbaseDao {
     }
 
     public void updateSession(JsonObject attributes, String namespace, String id) {
-        couchbase.queryN1QL(parameterized("UPDATE default USE KEYS $1 SET data." + namespace + " = $2", from(id, attributes)));
+        couchbase.queryN1QL(parameterized("UPDATE default USE KEYS $1 SET data.`" + namespace + "` = $2", from(id, attributes)));
     }
 
     @SuppressWarnings("unchecked")
     public Map<String, Object> findSessionAttributes(String id, String namespace) {
-        List<N1qlQueryRow> attributes = couchbase.queryN1QL(parameterized("SELECT * FROM default.data." + namespace + " USE KEYS $1", from(id))).allRows();
+        List<N1qlQueryRow> attributes = couchbase.queryN1QL(parameterized("SELECT * FROM default.data.`" + namespace + "` USE KEYS $1", from(id))).allRows();
         isTrue(attributes.size() < 2, "Invalid HTTP session state. Multiple namespaces '" + namespace + "' for session ID '" + id + "'");
         if (attributes.isEmpty()) {
             return null;
