@@ -3,6 +3,10 @@
 [![Coverage Status](https://coveralls.io/repos/github/mkopylec/session-couchbase-spring-boot-starter/badge.svg?branch=master)](https://coveralls.io/github/mkopylec/session-couchbase-spring-boot-starter?branch=master)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.mkopylec/session-couchbase-spring-boot-starter/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.github.mkopylec/session-couchbase-spring-boot-starter)
 
+The project is based on:  
+[Spring Session](http://projects.spring.io/spring-session/)  
+[Spring Data Couchbase](http://projects.spring.io/spring-data-couchbase/)  
+
 For more info about couchbase click [here](http://www.couchbase.com/)
 
 ## Installing
@@ -41,6 +45,17 @@ session-couchbase.persistent:
     hosts: <list_of_couchbase_cluster_hosts>
     bucket-name: <couchbase_bucket_name>
     password: <couchbase_bucket_password>
+```
+
+Optionally you can override default couchbase client settings by creating `CouchbaseEnvironment` bean:
+
+```java
+...
+@Primary
+@Bean(destroyMethod = "shutdown", name = BeanNames.COUCHBASE_ENV)
+public CouchbaseEnvironment couchbaseEnvironment() {
+    ...
+}
 ```
 
 ##### Additional info

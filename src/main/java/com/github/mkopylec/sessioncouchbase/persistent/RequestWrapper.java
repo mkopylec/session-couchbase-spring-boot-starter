@@ -1,5 +1,7 @@
 package com.github.mkopylec.sessioncouchbase.persistent;
 
+import org.slf4j.Logger;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
@@ -8,11 +10,14 @@ import java.util.Map.Entry;
 
 import static com.github.mkopylec.sessioncouchbase.persistent.CouchbaseSession.globalAttributeName;
 import static com.github.mkopylec.sessioncouchbase.persistent.CouchbaseSessionRepository.GLOBAL_NAMESPACE;
+import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.util.Assert.notNull;
 
 public class RequestWrapper extends HttpServletRequestWrapper {
 
     public final String CURRENT_SESSION_ATTR = HttpServletRequestWrapper.class.getName();
+
+    private static final Logger log = getLogger(RequestWrapper.class);
 
     protected final CouchbaseDao dao;
     protected final String namespace;
@@ -27,6 +32,8 @@ public class RequestWrapper extends HttpServletRequestWrapper {
 
     @Override
     public String changeSessionId() {
+        log.debug("Changing HTTP session ID");
+
         SessionEntity oldEntity = dao.findById(getRequestedSessionId());
         notNull(oldEntity, "Cannot change HTTP session ID, because session with ID '" + getRequestedSessionId() + "' does not exist");
 
@@ -39,6 +46,8 @@ public class RequestWrapper extends HttpServletRequestWrapper {
 
         copyGlobalAttributes(oldEntity, newSession);
         copyNamespaceAttributes(oldEntity, newSession);
+
+        log.debug("HTTP session ID changed from {} to {}", oldEntity.getId(), newEntity.getId());
 
         return newEntity.getId();
     }

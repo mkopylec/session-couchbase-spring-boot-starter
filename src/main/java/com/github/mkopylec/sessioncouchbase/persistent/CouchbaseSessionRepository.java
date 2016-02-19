@@ -1,6 +1,7 @@
 package com.github.mkopylec.sessioncouchbase.persistent;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
 import org.springframework.session.SessionRepository;
 
 import java.util.HashMap;
@@ -8,6 +9,7 @@ import java.util.Map;
 
 import static com.couchbase.client.java.document.json.JsonObject.from;
 import static java.lang.System.currentTimeMillis;
+import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.util.Assert.hasText;
 import static org.springframework.util.Assert.isTrue;
 import static org.springframework.util.Assert.notNull;
@@ -15,6 +17,8 @@ import static org.springframework.util.Assert.notNull;
 public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSession> {
 
     protected static final String GLOBAL_NAMESPACE = "global";
+
+    private static final Logger log = getLogger(CouchbaseSessionRepository.class);
 
     protected final CouchbaseDao dao;
     protected final ObjectMapper mapper;
@@ -37,17 +41,22 @@ public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSe
 
     @Override
     public CouchbaseSession createSession() {
+        log.debug("Creating HTTP session");
+
         CouchbaseSession session = new CouchbaseSession(sessionTimeout);
         Map<String, Map<String, Object>> sessionData = new HashMap<>(2);
         sessionData.put(GLOBAL_NAMESPACE, session.getGlobalAttributes());
         sessionData.put(namespace, session.getNamespaceAttributes());
         SessionEntity sessionEntity = new SessionEntity(session.getId(), sessionData);
         dao.save(sessionEntity);
+
         return session;
     }
 
     @Override
     public void save(CouchbaseSession session) {
+        log.debug("Saving HTTP session with ID {}", session.getId());
+
         Map<String, Object> serializedGlobal = serializer.serializeSessionAttributes(session.getGlobalAttributes());
         Map<String, Object> serializedNamespace = serializer.serializeSessionAttributes(session.getNamespaceAttributes());
         dao.updateSession(from(serializedGlobal), GLOBAL_NAMESPACE, session.getId());
@@ -56,10 +65,13 @@ public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSe
 
     @Override
     public CouchbaseSession getSession(String id) {
+        log.debug("Getting HTTP session with ID {}", id);
+
         Map<String, Object> globalAttributes = dao.findSessionAttributes(id, GLOBAL_NAMESPACE);
         Map<String, Object> namespaceAttributes = dao.findSessionAttributes(id, namespace);
 
         if (globalAttributes == null && namespaceAttributes == null) {
+            log.debug("HTTP session with ID {} not found", id);
             return null;
         }
 
@@ -69,6 +81,7 @@ public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSe
         Map<String, Object> deserializedNamespace = serializer.deserializeSessionAttributes(namespaceAttributes);
         CouchbaseSession session = new CouchbaseSession(id, deserializedGlobal, deserializedNamespace);
         if (session.isExpired()) {
+            log.debug("HTTP session with ID {} has expired", id);
             delete(id);
             return null;
         }
@@ -79,6 +92,7 @@ public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSe
 
     @Override
     public void delete(String id) {
+        log.debug("Deleting HTTP session with ID {}", id);
         dao.delete(id);
     }
 }

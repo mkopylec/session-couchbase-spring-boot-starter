@@ -1,5 +1,6 @@
 package com.github.mkopylec.sessioncouchbase.persistent;
 
+import org.slf4j.Logger;
 import org.springframework.session.ExpiringSession;
 
 import java.io.Serializable;
@@ -13,6 +14,7 @@ import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.util.Assert.hasText;
 import static org.springframework.util.Assert.isTrue;
 
@@ -20,10 +22,12 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    protected static final String GLOBAL_ATTRIBUTE_NAME_PREFIX = "_#global#_";
     public static final String CREATION_TIME_ATTRIBUTE = "$creationTime";
     public static final String LAST_ACCESSED_TIME_ATTRIBUTE = "$lastAccessedTime";
     public static final String MAX_INACTIVE_INTERVAL_ATTRIBUTE = "$maxInactiveInterval";
+    protected static final String GLOBAL_ATTRIBUTE_NAME_PREFIX = "_#global#_";
+
+    private static final Logger log = getLogger(CouchbaseSession.class);
 
     protected String id = randomUUID().toString();
     protected Map<String, Object> globalAttributes = new HashMap<>();
@@ -85,8 +89,11 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     public <T> T getAttribute(String attributeName) {
         checkAttributeName(attributeName);
         if (isGlobal(attributeName)) {
-            return (T) globalAttributes.get(getNameFromGlobalName(attributeName));
+            String name = getNameFromGlobalName(attributeName);
+            log.trace("Getting global HTTP session attribute named '{}'", name);
+            return (T) globalAttributes.get(name);
         } else {
+            log.trace("Getting application namespace HTTP session attribute named '{}'", attributeName);
             return (T) namespaceAttributes.get(attributeName);
         }
     }
@@ -103,8 +110,11 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     public void setAttribute(String attributeName, Object attributeValue) {
         checkAttributeName(attributeName);
         if (isGlobal(attributeName)) {
-            globalAttributes.put(getNameFromGlobalName(attributeName), attributeValue);
+            String name = getNameFromGlobalName(attributeName);
+            log.trace("Setting global HTTP session attribute named '{}'", name);
+            globalAttributes.put(name, attributeValue);
         } else {
+            log.trace("Setting application namespace HTTP session attribute named '{}'", attributeName);
             namespaceAttributes.put(attributeName, attributeValue);
         }
     }
@@ -113,8 +123,11 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     public void removeAttribute(String attributeName) {
         checkAttributeName(attributeName);
         if (isGlobal(attributeName)) {
-            globalAttributes.remove(getNameFromGlobalName(attributeName));
+            String name = getNameFromGlobalName(attributeName);
+            log.trace("Removing global HTTP session attribute named '{}'", name);
+            globalAttributes.remove(name);
         } else {
+            log.trace("Removing application namespace HTTP session attribute named '{}'", attributeName);
             namespaceAttributes.remove(attributeName);
         }
     }
