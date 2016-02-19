@@ -66,4 +66,19 @@ class NamespacesSpec extends BasicSpec {
                 .hasOkStatus()
                 .hasNoBody()
     }
+
+    def "Should set and remove global HTTP session attribute using different namespace"() {
+        given:
+        def message = new Message(text: 'delete me', number: 71830)
+        setGlobalSessionAttribute message
+        startExtraApplicationInstance('other_namespace')
+
+        when:
+        deleteGlobalSessionAttribute()
+
+        then:
+        assertThat(getGlobalSessionAttributeFromExtraInstance())
+                .hasOkStatus()
+                .hasNoBody()
+    }
 }

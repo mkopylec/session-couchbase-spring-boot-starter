@@ -35,16 +35,20 @@ public class PersistentConfiguration extends AbstractCouchbaseConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public MultiHttpSessionStrategy multiHttpSessionStrategy(CouchbaseDao dao) {
-        return new DelegatingSessionStrategy(new CookieHttpSessionStrategy(), dao);
+    public MultiHttpSessionStrategy multiHttpSessionStrategy(CouchbaseDao dao, Serializer serializer) {
+        return new DelegatingSessionStrategy(new CookieHttpSessionStrategy(), dao, sessionCouchbase.getPersistent().getNamespace(), serializer);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public SessionRepository sessionRepository(CouchbaseDao dao, ObjectMapper mapper) {
-        return new CouchbaseSessionRepository(
-                dao, sessionCouchbase.getPersistent().getNamespace(), mapper, sessionCouchbase.getTimeoutInSeconds()
-        );
+    public Serializer serializer() {
+        return new Serializer();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public SessionRepository sessionRepository(CouchbaseDao dao, ObjectMapper mapper, Serializer serializer) {
+        return new CouchbaseSessionRepository(dao, sessionCouchbase.getPersistent().getNamespace(), mapper, sessionCouchbase.getTimeoutInSeconds(), serializer);
     }
 
     @Bean

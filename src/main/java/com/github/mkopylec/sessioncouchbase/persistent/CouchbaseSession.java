@@ -21,9 +21,9 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     private static final long serialVersionUID = 1L;
 
     protected static final String GLOBAL_ATTRIBUTE_NAME_PREFIX = "_#global#_";
-    protected static final String CREATION_TIME_ATTRIBUTE = "$creationTime";
-    protected static final String LAST_ACCESSED_TIME_ATTRIBUTE = "$lastAccessedTime";
-    protected static final String MAX_INACTIVE_INTERVAL_ATTRIBUTE = "$maxInactiveInterval";
+    public static final String CREATION_TIME_ATTRIBUTE = "$creationTime";
+    public static final String LAST_ACCESSED_TIME_ATTRIBUTE = "$lastAccessedTime";
+    public static final String MAX_INACTIVE_INTERVAL_ATTRIBUTE = "$maxInactiveInterval";
 
     protected String id = randomUUID().toString();
     protected Map<String, Object> globalAttributes = new HashMap<>();
@@ -85,7 +85,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     public <T> T getAttribute(String attributeName) {
         checkAttributeName(attributeName);
         if (isGlobal(attributeName)) {
-            return (T) globalAttributes.get(getAttributeName(attributeName));
+            return (T) globalAttributes.get(getNameFromGlobalName(attributeName));
         } else {
             return (T) namespaceAttributes.get(attributeName);
         }
@@ -103,7 +103,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     public void setAttribute(String attributeName, Object attributeValue) {
         checkAttributeName(attributeName);
         if (isGlobal(attributeName)) {
-            globalAttributes.put(getAttributeName(attributeName), attributeValue);
+            globalAttributes.put(getNameFromGlobalName(attributeName), attributeValue);
         } else {
             namespaceAttributes.put(attributeName, attributeValue);
         }
@@ -113,8 +113,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     public void removeAttribute(String attributeName) {
         checkAttributeName(attributeName);
         if (isGlobal(attributeName)) {
-            //TODO remove global attr test
-            globalAttributes.remove(getAttributeName(attributeName));
+            globalAttributes.remove(getNameFromGlobalName(attributeName));
         } else {
             namespaceAttributes.remove(attributeName);
         }
@@ -141,7 +140,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
         return attributeName.startsWith(GLOBAL_ATTRIBUTE_NAME_PREFIX);
     }
 
-    protected String getAttributeName(String globalAttributeName) {
+    protected String getNameFromGlobalName(String globalAttributeName) {
         return globalAttributeName.replaceFirst(GLOBAL_ATTRIBUTE_NAME_PREFIX, "");
     }
 }

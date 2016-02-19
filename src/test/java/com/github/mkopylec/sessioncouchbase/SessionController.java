@@ -47,6 +47,11 @@ public class SessionController {
         session.removeAttribute(SESSION_ATTRIBUTE_NAME);
     }
 
+    @RequestMapping(value = "attribute/global", method = DELETE)
+    public void deleteGlobalAttribute(HttpSession session) {
+        session.removeAttribute(globalAttributeName(SESSION_ATTRIBUTE_NAME));
+    }
+
     @RequestMapping(value = "bean", method = POST)
     public void setBean(@RequestBody Message dto) {
         sessionBean.setText(dto.getText());

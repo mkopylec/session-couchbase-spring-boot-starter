@@ -56,8 +56,8 @@ abstract class BasicSpec extends Specification {
         delete('session/attribute', getPort())
     }
 
-    protected void deleteSessionAttributeInExtraInstance() {
-        delete('session/attribute', getExtraInstancePort())
+    protected void deleteGlobalSessionAttribute() {
+        delete('session/attribute/global', getPort())
     }
 
     protected ResponseEntity<Message> getSessionAttribute() {
