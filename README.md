@@ -63,8 +63,8 @@ Using Couchbase backed HTTP session you can share session among multiple web app
 The session will not be destroyed when the web applications will be shut down.
 
 You can access session attributes in 2 ways:
- - _application namespace_ - attributes are visible only to instances of the same web application
- - _global namespace_ - attributes are visible to all instances of all web applications
+ - _application namespace_ - attributes are visible only to instances of the same web application within a distributed system
+ - _global namespace_ - attributes are visible to all instances of all web applications within a distributed system
  
 To access application namespace just pass an attribute name:
 
