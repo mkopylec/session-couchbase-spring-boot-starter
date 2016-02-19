@@ -7,7 +7,7 @@ The project is based on:
 [Spring Session](http://projects.spring.io/spring-session/)  
 [Spring Data Couchbase](http://projects.spring.io/spring-data-couchbase/)  
 
-For more info about couchbase click [here](http://www.couchbase.com/)
+For more info about Couchbase click [here](http://www.couchbase.com/)
 
 ## Installing
 
@@ -37,7 +37,7 @@ public class SessionController {
 The starter can be used in 2 different modes:
 
 ### Couchbase backed persistence usage
-Configure couchbase connection in _application.yml_ file:
+Configure Couchbase connection in _application.yml_ file:
 
 ```yaml
 session-couchbase.persistent:
@@ -47,7 +47,7 @@ session-couchbase.persistent:
     password: <couchbase_bucket_password>
 ```
 
-Optionally you can override default couchbase client settings by creating `CouchbaseEnvironment` bean:
+Optionally you can override default Couchbase client settings by creating `CouchbaseEnvironment` bean:
 
 ```java
 ...
@@ -59,7 +59,7 @@ public CouchbaseEnvironment couchbaseEnvironment() {
 ```
 
 ##### Additional info
-Using couchbase backed HTTP session you can share session among multiple web applications.
+Using Couchbase backed HTTP session you can share session among multiple web applications.
 The session will not be destroyed when the web applications will be shut down.
 
 You can access session attributes in 2 ways:
