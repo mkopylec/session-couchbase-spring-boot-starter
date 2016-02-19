@@ -30,6 +30,7 @@ abstract class BasicSpec extends Specification {
     private EmbeddedWebApplicationContext extraInstanceContext
     @Autowired
     private SessionCouchbaseProperties sessionCouchbase
+    // Cannot store cookie in thread local because some tests starts more than one app instance. CANNOT run tests in parallel.
     private String currentSessionCookie
 
     protected void startExtraApplicationInstance(String namespace = sessionCouchbase.persistent.namespace) {
