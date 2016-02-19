@@ -7,7 +7,7 @@ The project is based on:
 [Spring Session](http://projects.spring.io/spring-session/)  
 [Spring Data Couchbase](http://projects.spring.io/spring-data-couchbase/)  
 
-For more info about Couchbase click [here](http://www.couchbase.com/)
+The project supports only Couchbase 4 and higher versions. For more info about Couchbase click [here](http://www.couchbase.com/)
 
 ## Installing
 
