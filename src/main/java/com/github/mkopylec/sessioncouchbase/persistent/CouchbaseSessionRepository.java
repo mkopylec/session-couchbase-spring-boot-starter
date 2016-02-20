@@ -49,6 +49,7 @@ public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSe
         sessionData.put(namespace, session.getNamespaceAttributes());
         SessionEntity sessionEntity = new SessionEntity(session.getId(), sessionData);
         dao.save(sessionEntity);
+        dao.updateExpirationTime(session.getId(), sessionTimeout);
 
         return session;
     }
@@ -61,6 +62,7 @@ public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSe
         Map<String, Object> serializedNamespace = serializer.serializeSessionAttributes(session.getNamespaceAttributes());
         dao.updateSession(from(serializedGlobal), GLOBAL_NAMESPACE, session.getId());
         dao.updateSession(from(serializedNamespace), namespace, session.getId());
+        dao.updateExpirationTime(session.getId(), sessionTimeout);
     }
 
     @Override

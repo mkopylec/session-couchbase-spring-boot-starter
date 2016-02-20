@@ -37,6 +37,10 @@ public class CouchbaseDao {
         return couchbase.findById(id, SessionEntity.class);
     }
 
+    public void updateExpirationTime(String id, int expiry) {
+        couchbase.getCouchbaseBucket().touch(id, expiry * 1000);
+    }
+
     public void save(SessionEntity entity) {
         couchbase.save(entity);
     }
