@@ -7,7 +7,7 @@ The project is based on:
 [Spring Session](http://projects.spring.io/spring-session/)  
 [Spring Data Couchbase](http://projects.spring.io/spring-data-couchbase/)  
 
-The project supports only Couchbase 4 and higher versions. For more info about Couchbase click [here](http://www.couchbase.com/)
+The project supports only Couchbase 4 and higher versions. For more information about Couchbase click [here](http://www.couchbase.com/).
 
 ## Installing
 
@@ -16,7 +16,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    compile 'com.github.mkopylec:session-couchbase-spring-boot-starter:1.1.1'
+    compile 'com.github.mkopylec:session-couchbase-spring-boot-starter:1.1.2'
 }
 ```
 
