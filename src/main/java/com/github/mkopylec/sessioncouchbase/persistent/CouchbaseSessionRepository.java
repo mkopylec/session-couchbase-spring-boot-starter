@@ -17,6 +17,7 @@ import static org.springframework.util.Assert.notNull;
 public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSession> {
 
     protected static final String GLOBAL_NAMESPACE = "global";
+    protected static final int SESSION_ENTITY_EXPIRATION_DELAY_IN_SECONDS = 60;
 
     private static final Logger log = getLogger(CouchbaseSessionRepository.class);
 
@@ -49,7 +50,7 @@ public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSe
         sessionData.put(namespace, session.getNamespaceAttributes());
         SessionEntity sessionEntity = new SessionEntity(session.getId(), sessionData);
         dao.save(sessionEntity);
-        dao.updateExpirationTime(session.getId(), sessionTimeout);
+        dao.updateExpirationTime(session.getId(), getSessionEntityExpiration());
 
         return session;
     }
@@ -59,10 +60,14 @@ public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSe
         log.debug("Saving HTTP session with ID {}", session.getId());
 
         Map<String, Object> serializedGlobal = serializer.serializeSessionAttributes(session.getGlobalAttributes());
-        Map<String, Object> serializedNamespace = serializer.serializeSessionAttributes(session.getNamespaceAttributes());
         dao.updateSession(from(serializedGlobal), GLOBAL_NAMESPACE, session.getId());
-        dao.updateSession(from(serializedNamespace), namespace, session.getId());
-        dao.updateExpirationTime(session.getId(), sessionTimeout);
+
+        if (session.isNamespacePersistenceRequired()) {
+            Map<String, Object> serializedNamespace = serializer.serializeSessionAttributes(session.getNamespaceAttributes());
+            dao.updateSession(from(serializedNamespace), namespace, session.getId());
+        }
+
+        dao.updateExpirationTime(session.getId(), getSessionEntityExpiration());
     }
 
     @Override
@@ -96,5 +101,9 @@ public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSe
     public void delete(String id) {
         log.debug("Deleting HTTP session with ID {}", id);
         dao.delete(id);
+    }
+
+    protected int getSessionEntityExpiration() {
+        return sessionTimeout + SESSION_ENTITY_EXPIRATION_DELAY_IN_SECONDS;
     }
 }

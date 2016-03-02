@@ -7,3 +7,5 @@ session-couchbase:
     password:
   in-memory:
     enabled: false
+
+logging.level.com.github.mkopylec.sessioncouchbase: trace

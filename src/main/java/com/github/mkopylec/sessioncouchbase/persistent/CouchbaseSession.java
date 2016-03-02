@@ -32,6 +32,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     protected String id = randomUUID().toString();
     protected Map<String, Object> globalAttributes = new HashMap<>();
     protected Map<String, Object> namespaceAttributes = new HashMap<>();
+    protected boolean namespacePersistenceRequired = false;
 
     public CouchbaseSession(int timeoutInSeconds) {
         long now = currentTimeMillis();
@@ -115,6 +116,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
             globalAttributes.put(name, attributeValue);
         } else {
             log.trace("Setting application namespace HTTP session attribute named '{}'", attributeName);
+            namespacePersistenceRequired = true;
             namespaceAttributes.put(attributeName, attributeValue);
         }
     }
@@ -128,6 +130,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
             globalAttributes.remove(name);
         } else {
             log.trace("Removing application namespace HTTP session attribute named '{}'", attributeName);
+            namespacePersistenceRequired = true;
             namespaceAttributes.remove(attributeName);
         }
     }
@@ -138,6 +141,10 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
 
     public Map<String, Object> getNamespaceAttributes() {
         return namespaceAttributes;
+    }
+
+    public boolean isNamespacePersistenceRequired() {
+        return namespacePersistenceRequired;
     }
 
     protected void setCreationTime(long creationTime) {
