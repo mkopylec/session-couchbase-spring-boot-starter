@@ -21,6 +21,19 @@ dependencies {
 ```
 
 ## How to use
+Enable Couchbase backed HTTP session using `@EnableCouchbaseHttpSession`:
+
+```java
+@EnableCouchbaseHttpSession
+@SpringBootApplication
+public class Application {
+
+    public static void main(String[] args) {
+        run(Application.class, args);
+    }
+}
+```
+
 Simply use `HttpSession` interface to control HTTP session. For example:
 
 ```java
