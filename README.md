@@ -85,7 +85,7 @@ To access application namespace just pass an attribute name:
 ...
 @RequestMapping("uri")
 public void doSomething(HttpSession session) {
-    session.setAttribute("name");
+    session.setAttribute("name", "value");
     session.getAttribute("name");
     ...
 }
@@ -98,7 +98,7 @@ To access global attributes create an attribute name using `CouchbaseSession.glo
 @RequestMapping("uri")
 public void doSomething(HttpSession session) {
     String attributeName = CouchbaseSession.globalAttributeName("name");
-    session.setAttribute(attributeName);
+    session.setAttribute(attributeName, "value");
     session.getAttribute(attributeName);
     ...
 }
@@ -117,7 +117,9 @@ session-couchbase.in-memory.enabled: true
 Using in-memory HTTP session you can not share session among multiple web applications.
 The session is visible only within a single web application instance and will be destroyed when the web application will be shut down.
 
-There are no namespaces in in-memory mode.
+There are no namespaces in the in-memory mode.
+
+The mode is useful for integration tests when you don't want to communicate with the real Couchbase server instance.
 
 ## Configuration properties list
 
