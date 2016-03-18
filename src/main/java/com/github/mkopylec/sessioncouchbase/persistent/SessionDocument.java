@@ -7,14 +7,14 @@ import org.springframework.data.couchbase.core.mapping.Document;
 import java.util.Map;
 
 @Document
-public class SessionEntity {
+public class SessionDocument {
 
     @Id
-    protected String id;
+    protected final String id;
     @Field
-    protected Map<String, Map<String, Object>> data;
+    protected final Map<String, Map<String, Object>> data;
 
-    public SessionEntity(String id, Map<String, Map<String, Object>> data) {
+    public SessionDocument(String id, Map<String, Map<String, Object>> data) {
         this.id = id;
         this.data = data;
     }

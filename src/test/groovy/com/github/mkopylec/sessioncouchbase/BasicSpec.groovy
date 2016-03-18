@@ -89,12 +89,29 @@ abstract class BasicSpec extends Specification {
         put('session/id')
     }
 
-    private void post(String path, Object body, int port = getPort()) {
+    protected String setPrincipalSessionAttribute() {
+        return post('session/principal', null, getPort(), String).body
+    }
+
+    protected String setPrincipalSessionAttributeToExtraInstance() {
+        return post('session/principal', null, getExtraInstancePort(), String).body
+    }
+
+    protected ResponseEntity<Set<String>> getPrincipalSessions() {
+        return get('session/principal', Set, getPort())
+    }
+
+    protected void clearSessionCookie() {
+        currentSessionCookie = null
+    }
+
+    private <T> ResponseEntity<T> post(String path, Object body, int port = getPort(), Class<T> responseType = Object) {
         def url = createUrl(path, port)
         HttpHeaders headers = addSessionCookie()
         def request = new HttpEntity<>(body, headers)
-        def response = restTemplate.postForEntity(url, request, Object)
+        def response = restTemplate.postForEntity(url, request, responseType)
         saveSessionCookie(response)
+        return response
     }
 
     private <T> ResponseEntity<T> get(String path, Class<T> responseType, int port = getPort()) {
@@ -149,6 +166,6 @@ abstract class BasicSpec extends Specification {
     }
 
     void cleanup() {
-        currentSessionCookie = null
+        clearSessionCookie()
     }
 }

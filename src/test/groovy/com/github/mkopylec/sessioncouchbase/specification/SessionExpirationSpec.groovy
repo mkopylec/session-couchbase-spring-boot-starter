@@ -20,7 +20,6 @@ abstract class SessionExpirationSpec extends BasicSpec {
 
         then:
         assertThat(response)
-                .hasOkStatus()
                 .hasNoBody()
     }
 }

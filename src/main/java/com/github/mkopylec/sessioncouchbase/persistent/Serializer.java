@@ -22,7 +22,7 @@ public class Serializer {
         }
         Map<String, Object> serialized = new HashMap<>(attributes.size());
         for (Entry<String, Object> attribute : attributes.entrySet()) {
-            if (isDeserializedObject(attribute)) {
+            if (isDeserializedObject(attribute.getValue())) {
                 Object attributeValue = encodeToString(serialize(attribute.getValue()));
                 serialized.put(attribute.getKey(), SERIALIZED_OBJECT_PREFIX + attributeValue);
             } else {
@@ -39,7 +39,7 @@ public class Serializer {
         Map<String, Object> deserialized = new HashMap<>(attributes.size());
         for (Entry<String, Object> attribute : attributes.entrySet()) {
             Object attributeValue = attribute.getValue();
-            if (isSerializedObject(attribute)) {
+            if (isSerializedObject(attribute.getValue())) {
                 String content = removeStart(attribute.getValue().toString(), SERIALIZED_OBJECT_PREFIX);
                 attributeValue = deserialize(decodeFromString(content));
             }
@@ -48,11 +48,11 @@ public class Serializer {
         return deserialized;
     }
 
-    protected boolean isDeserializedObject(Entry<String, Object> attribute) {
-        return attribute.getValue() != null && !isPrimitiveOrWrapper(attribute.getValue().getClass());
+    protected boolean isDeserializedObject(Object attributeValue) {
+        return attributeValue != null && !isPrimitiveOrWrapper(attributeValue.getClass()) && !(attributeValue instanceof String);
     }
 
-    protected boolean isSerializedObject(Entry<String, Object> attribute) {
-        return attribute.getValue() != null && attribute.getValue() instanceof String && startsWith(attribute.getValue().toString(), SERIALIZED_OBJECT_PREFIX);
+    protected boolean isSerializedObject(Object attributeValue) {
+        return attributeValue != null && attributeValue instanceof String && startsWith(attributeValue.toString(), SERIALIZED_OBJECT_PREFIX);
     }
 }

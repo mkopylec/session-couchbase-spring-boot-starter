@@ -21,13 +21,10 @@ class PersistentSessionSpec extends SessionSpec {
 
         then:
         assertThat(getSessionAttribute())
-                .hasOkStatus()
                 .hasBody(message)
         assertThat(getGlobalSessionAttributeFromExtraInstance())
-                .hasOkStatus()
                 .hasBody(globalMessage)
         assertThat(getSessionAttributeFromExtraInstance())
-                .hasOkStatus()
                 .hasBody(extraMessage)
     }
 }

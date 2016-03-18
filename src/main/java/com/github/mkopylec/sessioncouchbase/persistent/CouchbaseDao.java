@@ -1,6 +1,7 @@
 package com.github.mkopylec.sessioncouchbase.persistent;
 
 import com.couchbase.client.java.document.json.JsonObject;
+import com.couchbase.client.java.error.DocumentDoesNotExistException;
 import com.couchbase.client.java.query.N1qlQueryRow;
 import org.springframework.data.couchbase.core.CouchbaseTemplate;
 
@@ -23,6 +24,14 @@ public class CouchbaseDao {
         couchbase.queryN1QL(parameterized("UPDATE default USE KEYS $1 SET data.`" + namespace + "` = $2", from(id, attributes)));
     }
 
+    public void updateAppendPrincipalSession(String principal, String sessionId) {
+        couchbase.queryN1QL(parameterized("UPDATE default USE KEYS $1 SET sessionIds = ARRAY_APPEND(sessionIds, $2)", from(principal, sessionId)));
+    }
+
+    public void updateRemovePrincipalSession(String principal, String sessionId) {
+        couchbase.queryN1QL(parameterized("UPDATE default USE KEYS $1 SET sessionIds = ARRAY_REMOVE(sessionIds, $2)", from(principal, sessionId)));
+    }
+
     @SuppressWarnings("unchecked")
     public Map<String, Object> findSessionAttributes(String id, String namespace) {
         List<N1qlQueryRow> attributes = couchbase.queryN1QL(parameterized("SELECT * FROM default.data.`" + namespace + "` USE KEYS $1", from(id))).allRows();
@@ -33,19 +42,35 @@ public class CouchbaseDao {
         return (Map<String, Object>) attributes.get(0).value().toMap().get(namespace);
     }
 
-    public SessionEntity findById(String id) {
-        return couchbase.findById(id, SessionEntity.class);
+    public SessionDocument findById(String id) {
+        return couchbase.findById(id, SessionDocument.class);
+    }
+
+    public PrincipalSessionsDocument findByPrincipal(String principal) {
+        return couchbase.findById(principal, PrincipalSessionsDocument.class);
     }
 
     public void updateExpirationTime(String id, int expiry) {
         couchbase.getCouchbaseBucket().touch(id, expiry * 1000);
     }
 
-    public void save(SessionEntity entity) {
-        couchbase.save(entity);
+    public void save(SessionDocument document) {
+        couchbase.save(document);
+    }
+
+    public void save(PrincipalSessionsDocument document) {
+        couchbase.save(document);
+    }
+
+    public boolean exists(String documentId) {
+        return couchbase.exists(documentId);
     }
 
     public void delete(String id) {
-        couchbase.remove(id);
+        try {
+            couchbase.remove(id);
+        } catch (DocumentDoesNotExistException ex) {
+            //Do nothing
+        }
     }
 }

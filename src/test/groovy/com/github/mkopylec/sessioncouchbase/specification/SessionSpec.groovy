@@ -17,7 +17,6 @@ abstract class SessionSpec extends BasicSpec {
 
         then:
         assertThat(response)
-                .hasOkStatus()
                 .hasBody(message)
     }
 
@@ -31,7 +30,6 @@ abstract class SessionSpec extends BasicSpec {
 
         then:
         assertThat(getSessionAttribute())
-                .hasOkStatus()
                 .hasNoBody()
     }
 
@@ -45,7 +43,6 @@ abstract class SessionSpec extends BasicSpec {
 
         then:
         assertThat(getSessionAttribute())
-                .hasOkStatus()
                 .hasNoBody()
     }
 
@@ -59,7 +56,6 @@ abstract class SessionSpec extends BasicSpec {
 
         then:
         assertThat(response)
-                .hasOkStatus()
                 .hasBody(message)
     }
 
@@ -74,7 +70,6 @@ abstract class SessionSpec extends BasicSpec {
 
         then:
         assertThat(response)
-                .hasOkStatus()
                 .hasBody(new Message(text: null, number: null))
     }
 }

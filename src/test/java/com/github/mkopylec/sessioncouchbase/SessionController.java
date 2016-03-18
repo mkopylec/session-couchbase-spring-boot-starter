@@ -1,5 +1,7 @@
 package com.github.mkopylec.sessioncouchbase;
 
+import com.github.mkopylec.sessioncouchbase.persistent.CouchbaseSession;
+import com.github.mkopylec.sessioncouchbase.persistent.CouchbaseSessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -7,8 +9,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.Map;
+import java.util.Set;
 
 import static com.github.mkopylec.sessioncouchbase.persistent.CouchbaseSession.globalAttributeName;
+import static org.springframework.session.FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import static org.springframework.web.bind.annotation.RequestMethod.PUT;
@@ -17,10 +22,13 @@ import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 @RequestMapping("session")
 public class SessionController {
 
+    public static final String PRINCIPAL_NAME = "user";
     private static final String SESSION_ATTRIBUTE_NAME = "attribute";
 
-    @Autowired
+    @Autowired(required = false)
     private SessionScopedBean sessionBean;
+    @Autowired(required = false)
+    private CouchbaseSessionRepository sessionRepository;
 
     @RequestMapping(value = "attribute", method = POST)
     public void setAttribute(@RequestBody Message dto, HttpSession session) {
@@ -74,5 +82,17 @@ public class SessionController {
     @RequestMapping(value = "id", method = PUT)
     public void changeSessionId(HttpServletRequest request) {
         request.changeSessionId();
+    }
+
+    @RequestMapping(value = "principal", method = POST)
+    public String setPrincipalAttribute(HttpSession session) {
+        session.setAttribute(PRINCIPAL_NAME_INDEX_NAME, PRINCIPAL_NAME);
+        return session.getId();
+    }
+
+    @RequestMapping("principal")
+    public Set<String> getPrincipalSessions() {
+        Map<String, CouchbaseSession> sessionsById = sessionRepository.findByIndexNameAndIndexValue(PRINCIPAL_NAME_INDEX_NAME, PRINCIPAL_NAME);
+        return sessionsById.keySet();
     }
 }

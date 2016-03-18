@@ -15,6 +15,7 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.springframework.session.FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME;
 import static org.springframework.util.Assert.hasText;
 import static org.springframework.util.Assert.isTrue;
 
@@ -25,7 +26,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     public static final String CREATION_TIME_ATTRIBUTE = "$creationTime";
     public static final String LAST_ACCESSED_TIME_ATTRIBUTE = "$lastAccessedTime";
     public static final String MAX_INACTIVE_INTERVAL_ATTRIBUTE = "$maxInactiveInterval";
-    protected static final String GLOBAL_ATTRIBUTE_NAME_PREFIX = "_#global#_";
+    protected static final String GLOBAL_ATTRIBUTE_NAME_PREFIX = CouchbaseSession.class.getName() + ".global";
 
     private static final Logger log = getLogger(CouchbaseSession.class);
 
@@ -33,6 +34,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     protected Map<String, Object> globalAttributes = new HashMap<>();
     protected Map<String, Object> namespaceAttributes = new HashMap<>();
     protected boolean namespacePersistenceRequired = false;
+    protected boolean principalSession = false;
 
     public CouchbaseSession(int timeoutInSeconds) {
         long now = currentTimeMillis();
@@ -45,6 +47,9 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
         this.id = id;
         this.globalAttributes = globalAttributes == null ? new HashMap<String, Object>() : globalAttributes;
         this.namespaceAttributes = namespaceAttributes == null ? new HashMap<String, Object>() : namespaceAttributes;
+        if (containsPrincipalAttribute()) {
+            principalSession = true;
+        }
     }
 
     public static String globalAttributeName(String attributeName) {
@@ -112,11 +117,17 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
         checkAttributeName(attributeName);
         if (isGlobal(attributeName)) {
             String name = getNameFromGlobalName(attributeName);
+            if (PRINCIPAL_NAME_INDEX_NAME.equals(name)) {
+                principalSession = true;
+            }
             log.trace("Setting global HTTP session attribute named '{}'", name);
             globalAttributes.put(name, attributeValue);
         } else {
-            log.trace("Setting application namespace HTTP session attribute named '{}'", attributeName);
+            if (PRINCIPAL_NAME_INDEX_NAME.equals(attributeName)) {
+                principalSession = true;
+            }
             namespacePersistenceRequired = true;
+            log.trace("Setting application namespace HTTP session attribute named '{}'", attributeName);
             namespaceAttributes.put(attributeName, attributeValue);
         }
     }
@@ -147,6 +158,18 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
         return namespacePersistenceRequired;
     }
 
+    public boolean isPrincipalSession() {
+        return principalSession;
+    }
+
+    public String getPrincipalAttribute() {
+        Object principal = globalAttributes.get(PRINCIPAL_NAME_INDEX_NAME);
+        if (principal == null) {
+            principal = namespaceAttributes.get(PRINCIPAL_NAME_INDEX_NAME);
+        }
+        return (String) principal;
+    }
+
     protected void setCreationTime(long creationTime) {
         globalAttributes.put(CREATION_TIME_ATTRIBUTE, creationTime);
     }
@@ -162,5 +185,9 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
 
     protected String getNameFromGlobalName(String globalAttributeName) {
         return globalAttributeName.replaceFirst(GLOBAL_ATTRIBUTE_NAME_PREFIX, "");
+    }
+
+    protected boolean containsPrincipalAttribute() {
+        return globalAttributes.containsKey(PRINCIPAL_NAME_INDEX_NAME) || namespaceAttributes.containsKey(PRINCIPAL_NAME_INDEX_NAME);
     }
 }

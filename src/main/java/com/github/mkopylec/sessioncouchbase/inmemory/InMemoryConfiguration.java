@@ -7,10 +7,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.session.MapSession;
 import org.springframework.session.MapSessionRepository;
 import org.springframework.session.SessionRepository;
-import org.springframework.session.web.http.SessionRepositoryFilter;
 
 @Configuration("sessionInMemoryConfiguration")
 @EnableConfigurationProperties(SessionCouchbaseProperties.class)
@@ -26,11 +24,5 @@ public class InMemoryConfiguration {
         MapSessionRepository repository = new MapSessionRepository();
         repository.setDefaultMaxInactiveInterval(sessionCouchbase.getTimeoutInSeconds());
         return repository;
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public SessionRepositoryFilter sessionRepositoryFilter(SessionRepository<MapSession> repository) {
-        return new SessionRepositoryFilter<>(repository);
     }
 }

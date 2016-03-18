@@ -2,8 +2,6 @@ package com.github.mkopylec.sessioncouchbase.assertions
 
 import org.springframework.http.ResponseEntity
 
-import static org.springframework.http.HttpStatus.OK
-
 class ResponseAssert {
 
     private ResponseEntity actual
@@ -13,6 +11,21 @@ class ResponseAssert {
         this.actual = actual
     }
 
+    ResponseAssert hasSessionIds(String... sessionIds) {
+        assert actual.body != null
+        def actualSessionIds = actual.body as Set
+        assert actualSessionIds.size() == sessionIds.size()
+        assert actualSessionIds.containsAll(sessionIds)
+        return this
+    }
+
+    ResponseAssert hasNoSessionIds() {
+        assert actual.body != null
+        def actualSessionIds = actual.body as Set
+        assert actualSessionIds.isEmpty()
+        return this
+    }
+
     ResponseAssert hasBody(Object body) {
         assert actual.body == body
         return this
@@ -20,11 +33,6 @@ class ResponseAssert {
 
     ResponseAssert hasNoBody() {
         assert actual.body == null
-        return this
-    }
-
-    ResponseAssert hasOkStatus() {
-        assert actual.statusCode == OK
         return this
     }
 }

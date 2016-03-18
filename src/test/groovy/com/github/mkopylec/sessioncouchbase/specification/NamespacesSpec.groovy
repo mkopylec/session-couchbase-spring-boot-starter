@@ -18,7 +18,6 @@ class NamespacesSpec extends BasicSpec {
 
         then:
         assertThat(response)
-                .hasOkStatus()
                 .hasBody(message)
     }
 
@@ -33,7 +32,6 @@ class NamespacesSpec extends BasicSpec {
 
         then:
         assertThat(response)
-                .hasOkStatus()
                 .hasBody(message)
     }
 
@@ -48,7 +46,6 @@ class NamespacesSpec extends BasicSpec {
 
         then:
         assertThat(response)
-                .hasOkStatus()
                 .hasBody(message)
     }
 
@@ -63,7 +60,6 @@ class NamespacesSpec extends BasicSpec {
 
         then:
         assertThat(response)
-                .hasOkStatus()
                 .hasNoBody()
     }
 
@@ -78,7 +74,6 @@ class NamespacesSpec extends BasicSpec {
 
         then:
         assertThat(getGlobalSessionAttributeFromExtraInstance())
-                .hasOkStatus()
                 .hasNoBody()
     }
 }

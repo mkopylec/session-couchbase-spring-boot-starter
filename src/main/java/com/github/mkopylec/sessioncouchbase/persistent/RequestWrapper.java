@@ -34,26 +34,26 @@ public class RequestWrapper extends HttpServletRequestWrapper {
     public String changeSessionId() {
         log.debug("Changing HTTP session ID");
 
-        SessionEntity oldEntity = dao.findById(getRequestedSessionId());
-        notNull(oldEntity, "Cannot change HTTP session ID, because session with ID '" + getRequestedSessionId() + "' does not exist");
+        SessionDocument oldDocument = dao.findById(getRequestedSessionId());
+        notNull(oldDocument, "Cannot change HTTP session ID, because session with ID '" + getRequestedSessionId() + "' does not exist");
 
         removeAttribute(CURRENT_SESSION_ATTR);
-        dao.delete(oldEntity.getId());
+        dao.delete(oldDocument.getId());
 
         HttpSession newSession = getSession();
-        SessionEntity newEntity = new SessionEntity(newSession.getId(), oldEntity.getData());
-        dao.save(newEntity);
+        SessionDocument newDocument = new SessionDocument(newSession.getId(), oldDocument.getData());
+        dao.save(newDocument);
 
-        copyGlobalAttributes(oldEntity, newSession);
-        copyNamespaceAttributes(oldEntity, newSession);
+        copyGlobalAttributes(oldDocument, newSession);
+        copyNamespaceAttributes(oldDocument, newSession);
 
-        log.debug("HTTP session ID changed from {} to {}", oldEntity.getId(), newEntity.getId());
+        log.debug("HTTP session ID changed from {} to {}", oldDocument.getId(), newDocument.getId());
 
-        return newEntity.getId();
+        return newDocument.getId();
     }
 
-    protected void copyGlobalAttributes(SessionEntity oldEntity, HttpSession newSession) {
-        Map<String, Object> attributes = oldEntity.getData().get(GLOBAL_NAMESPACE);
+    protected void copyGlobalAttributes(SessionDocument oldDocument, HttpSession newSession) {
+        Map<String, Object> attributes = oldDocument.getData().get(GLOBAL_NAMESPACE);
         if (attributes != null) {
             Map<String, Object> deserializedAttributes = serializer.deserializeSessionAttributes(attributes);
             for (Entry<String, Object> attribute : deserializedAttributes.entrySet()) {
@@ -62,8 +62,8 @@ public class RequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
-    protected void copyNamespaceAttributes(SessionEntity oldEntity, HttpSession newSession) {
-        Map<String, Object> attributes = oldEntity.getData().get(namespace);
+    protected void copyNamespaceAttributes(SessionDocument oldDocument, HttpSession newSession) {
+        Map<String, Object> attributes = oldDocument.getData().get(namespace);
         if (attributes != null) {
             Map<String, Object> deserializedAttributes = serializer.deserializeSessionAttributes(attributes);
             for (Entry<String, Object> attribute : deserializedAttributes.entrySet()) {
