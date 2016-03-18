@@ -50,7 +50,7 @@ public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSe
         dao.save(sessionEntity);
         dao.updateExpirationTime(session.getId(), getSessionEntityExpiration());
 
-        log.debug("HTTP session with ID {} created", session.getId());
+        log.debug("Created HTTP session with ID {}", session.getId());
 
         return session;
     }
@@ -67,7 +67,7 @@ public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSe
 
         dao.updateExpirationTime(session.getId(), getSessionEntityExpiration());
 
-        log.debug("HTTP session with ID {} saved", session.getId());
+        log.debug("Saved HTTP session with ID {}", session.getId());
     }
 
     @Override
@@ -92,7 +92,7 @@ public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSe
         }
         session.setLastAccessedTime(currentTimeMillis());
 
-        log.debug("Got HTTP session with ID {}", id);
+        log.debug("Found HTTP session with ID {}", id);
 
         return session;
     }
@@ -100,7 +100,7 @@ public class CouchbaseSessionRepository implements SessionRepository<CouchbaseSe
     @Override
     public void delete(String id) {
         dao.delete(id);
-        log.debug("HTTP session with ID {} deleted", id);
+        log.debug("Deleted HTTP session with ID {}", id);
     }
 
     protected int getSessionEntityExpiration() {
