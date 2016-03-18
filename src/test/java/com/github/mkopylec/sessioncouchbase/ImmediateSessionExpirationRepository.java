@@ -18,7 +18,7 @@ public class ImmediateSessionExpirationRepository extends CouchbaseSessionReposi
     }
 
     @Override
-    protected int getSessionEntityExpiration() {
+    protected int getSessionDocumentExpiration() {
         return sessionTimeout;
     }
 }
