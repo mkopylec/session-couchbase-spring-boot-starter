@@ -54,13 +54,13 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
 
         log.debug("HTTP session created with ID {}", session.getId());
 
+        log.debug("HTTP session with ID {} has been created", session.getId());
+
         return session;
     }
 
     @Override
     public void save(CouchbaseSession session) {
-        log.debug("Saving HTTP session with ID {}", session.getId());
-
         Map<String, Object> serializedGlobal = serializer.serializeSessionAttributes(session.getGlobalAttributes());
         dao.updateSession(from(serializedGlobal), GLOBAL_NAMESPACE, session.getId());
 
@@ -90,12 +90,11 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
 //        }catch (Exception e) {
 //            log.error("hahahaha", e);
 //        }
+        log.debug("HTTP session with ID {} has been saved", session.getId());
     }
 
     @Override
     public CouchbaseSession getSession(String id) {
-        log.debug("Getting HTTP session with ID {}", id);
-
         Map<String, Object> globalAttributes = dao.findSessionAttributes(id, GLOBAL_NAMESPACE);
         Map<String, Object> namespaceAttributes = dao.findSessionAttributes(id, namespace);
 
@@ -116,6 +115,8 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
         }
         session.setLastAccessedTime(currentTimeMillis());
 
+        log.debug("Got HTTP session with ID {}", id);
+
         return session;
     }
 
@@ -126,6 +127,8 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
             return;
         }
         deleteSession(session);
+
+        log.debug("HTTP session with ID {} has been deleted", id);
     }
 
     @Override
