@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate
 import spock.lang.Shared
 import spock.lang.Specification
 
+import static java.net.HttpCookie.parse
 import static org.springframework.boot.SpringApplication.run
 import static org.springframework.http.HttpHeaders.COOKIE
 import static org.springframework.http.HttpMethod.DELETE
@@ -23,7 +24,7 @@ import static org.springframework.http.HttpMethod.PUT
 abstract class BasicSpec extends Specification {
 
     @Shared
-    private RestTemplate restTemplate = new RestTemplate();
+    private RestTemplate restTemplate = new RestTemplate()
     @Autowired
     private EmbeddedWebApplicationContext context
     @Shared
@@ -39,6 +40,10 @@ abstract class BasicSpec extends Specification {
 
     protected int getSessionTimeout() {
         return sessionCouchbase.timeoutInSeconds * 1000
+    }
+
+    protected String getCurrentSessionId() {
+        return parse(currentSessionCookie)[0].value
     }
 
     protected void setSessionAttribute(Message attribute) {

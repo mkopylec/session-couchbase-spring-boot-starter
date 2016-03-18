@@ -89,14 +89,16 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     @Override
     public <T> T getAttribute(String attributeName) {
         checkAttributeName(attributeName);
+        T attribute;
         if (isGlobal(attributeName)) {
             String name = getNameFromGlobalName(attributeName);
-            log.trace("Getting global HTTP session attribute named '{}'", name);
-            return (T) globalAttributes.get(name);
+            attribute = (T) globalAttributes.get(name);
+            log.trace("Global HTTP session attribute: [name='{}', value={}] has been read", name, attribute);
         } else {
-            log.trace("Getting application namespace HTTP session attribute named '{}'", attributeName);
-            return (T) namespaceAttributes.get(attributeName);
+            attribute = (T) namespaceAttributes.get(attributeName);
+            log.trace("Application namespace HTTP session attribute: [name='{}', value={}] has been read", attributeName, attribute);
         }
+        return attribute;
     }
 
     @Override
@@ -112,12 +114,12 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
         checkAttributeName(attributeName);
         if (isGlobal(attributeName)) {
             String name = getNameFromGlobalName(attributeName);
-            log.trace("Setting global HTTP session attribute named '{}'", name);
             globalAttributes.put(name, attributeValue);
+            log.trace("Global HTTP session attribute: [name='{}', value={}] has been set", name, attributeValue);
         } else {
-            log.trace("Setting application namespace HTTP session attribute named '{}'", attributeName);
             namespacePersistenceRequired = true;
             namespaceAttributes.put(attributeName, attributeValue);
+            log.trace("Application namespace HTTP session attribute: [name='{}', value={}] has been set", attributeName, attributeValue);
         }
     }
 
@@ -126,12 +128,12 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
         checkAttributeName(attributeName);
         if (isGlobal(attributeName)) {
             String name = getNameFromGlobalName(attributeName);
-            log.trace("Removing global HTTP session attribute named '{}'", name);
             globalAttributes.remove(name);
+            log.trace("Global HTTP session attribute: [name='{}'] has been removed", name);
         } else {
-            log.trace("Removing application namespace HTTP session attribute named '{}'", attributeName);
             namespacePersistenceRequired = true;
             namespaceAttributes.remove(attributeName);
+            log.trace("Application namespace HTTP session attribute: [name='{}'] has been removed", attributeName);
         }
     }
 
