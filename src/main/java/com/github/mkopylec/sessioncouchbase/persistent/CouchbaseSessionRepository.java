@@ -54,7 +54,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
 
         log.debug("HTTP session created with ID {}", session.getId());
 
-        log.debug("HTTP session with ID {} has been created", session.getId());
+        log.debug("Created HTTP session with ID {}", session.getId());
 
         return session;
     }
@@ -90,7 +90,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
 //        }catch (Exception e) {
 //            log.error("hahahaha", e);
 //        }
-        log.debug("HTTP session with ID {} has been saved", session.getId());
+        log.debug("Saved HTTP session with ID {}", session.getId());
     }
 
     @Override
@@ -115,7 +115,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
         }
         session.setLastAccessedTime(currentTimeMillis());
 
-        log.debug("Got HTTP session with ID {}", id);
+        log.debug("Found HTTP session with ID {}", id);
 
         return session;
     }
@@ -128,7 +128,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
         }
         deleteSession(session);
 
-        log.debug("HTTP session with ID {} has been deleted", id);
+        log.debug("Deleted HTTP session with ID {}", id);
     }
 
     @Override

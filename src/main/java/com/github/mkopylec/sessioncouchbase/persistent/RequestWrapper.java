@@ -32,8 +32,6 @@ public class RequestWrapper extends HttpServletRequestWrapper {
 
     @Override
     public String changeSessionId() {
-        log.debug("Changing HTTP session ID");
-
         SessionDocument oldDocument = dao.findById(getRequestedSessionId());
         notNull(oldDocument, "Cannot change HTTP session ID, because session with ID '" + getRequestedSessionId() + "' does not exist");
 
