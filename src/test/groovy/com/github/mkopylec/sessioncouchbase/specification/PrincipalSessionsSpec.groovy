@@ -1,16 +1,10 @@
 package com.github.mkopylec.sessioncouchbase.specification
 
 import com.github.mkopylec.sessioncouchbase.BasicSpec
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.couchbase.core.CouchbaseTemplate
 
-import static com.github.mkopylec.sessioncouchbase.SessionController.PRINCIPAL_NAME
 import static com.github.mkopylec.sessioncouchbase.assertions.Assertions.assertThat
 
 class PrincipalSessionsSpec extends BasicSpec {
-
-    @Autowired
-    private CouchbaseTemplate couchbase
 
     def "Should get principal sessions when they exist"() {
         given:
@@ -40,9 +34,6 @@ class PrincipalSessionsSpec extends BasicSpec {
     }
 
     void setup() {
-        if (couchbase.exists(PRINCIPAL_NAME)) {
-            couchbase.remove(PRINCIPAL_NAME)
-//            sleep(10000)
-        }
+        clearBucket()
     }
 }

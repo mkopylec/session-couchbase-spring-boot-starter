@@ -71,25 +71,18 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
 
         if (session.isPrincipalSession()) {
             String principal = session.getPrincipalAttribute();
-            log.debug("Adding principals {} session with ID {}", principal, session.getId());
             if (dao.exists(principal)) {
                 dao.updateAppendPrincipalSession(principal, session.getId());
             } else {
                 PrincipalSessionsDocument sessionsDocument = new PrincipalSessionsDocument(principal, singletonList(session.getId()));
                 dao.save(sessionsDocument);
             }
-            try {
-                dao.updateExpirationTime(principal, getSessionDocumentExpiration());
-            } catch (Exception e) {
-                log.error("hahahaha", e);
-            }
+            log.debug("Added principals {} session with ID {}", principal, session.getId());
+            dao.updateExpirationTime(principal, getSessionDocumentExpiration());
         }
 
-//        try {
         dao.updateExpirationTime(session.getId(), getSessionDocumentExpiration());
-//        }catch (Exception e) {
-//            log.error("hahahaha", e);
-//        }
+
         log.debug("Saved HTTP session with ID {}", session.getId());
     }
 
@@ -127,19 +120,16 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
             return;
         }
         deleteSession(session);
-
-        log.debug("Deleted HTTP session with ID {}", id);
     }
 
     @Override
     public Map<String, CouchbaseSession> findByIndexNameAndIndexValue(String indexName, String indexValue) {
-        log.debug("Getting principals {} sessions", indexValue);
-
         if (!PRINCIPAL_NAME_INDEX_NAME.equals(indexName)) {
             return emptyMap();
         }
         PrincipalSessionsDocument sessionsDocument = dao.findByPrincipal(indexValue);
         if (sessionsDocument == null) {
+            log.debug("Principals {} sessions not found", indexValue);
             return emptyMap();
         }
         Map<String, CouchbaseSession> sessionsById = new HashMap<>(sessionsDocument.getSessionIds().size());
@@ -147,6 +137,9 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
             CouchbaseSession session = getSession(sessionId);
             sessionsById.put(sessionId, session);
         }
+
+        log.debug("Found principals {} sessions with IDs {}", indexValue, sessionsById.keySet());
+
         return sessionsById;
     }
 
@@ -156,10 +149,10 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
 
     protected void deleteSession(CouchbaseSession session) {
         if (session.isPrincipalSession()) {
-            log.debug("Removing principals {} session with ID {}", session.getPrincipalAttribute(), session.getId());
             dao.updateRemovePrincipalSession(session.getPrincipalAttribute(), session.getId());
+            log.debug("Removed principals {} session with ID {}", session.getPrincipalAttribute(), session.getId());
         }
-        log.debug("Deleting HTTP session with ID {}", session.getId());
         dao.delete(session.getId());
+        log.debug("Deleted HTTP session with ID {}", session.getId());
     }
 }

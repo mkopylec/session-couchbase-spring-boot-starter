@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.embedded.EmbeddedWebApplicationContext
 import org.springframework.boot.test.SpringApplicationContextLoader
 import org.springframework.boot.test.WebIntegrationTest
+import org.springframework.data.couchbase.core.CouchbaseTemplate
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
@@ -24,7 +25,9 @@ import static org.springframework.http.HttpMethod.PUT
 abstract class BasicSpec extends Specification {
 
     @Shared
-    private RestTemplate restTemplate = new RestTemplate()
+    private RestTemplate rest = new RestTemplate()
+    @Autowired(required = false)
+    private CouchbaseTemplate couchbase
     @Autowired
     private EmbeddedWebApplicationContext context
     @Shared
@@ -38,12 +41,18 @@ abstract class BasicSpec extends Specification {
         extraInstanceContext = (EmbeddedWebApplicationContext) run(TestApplication, "--server.port=0", "--session-couchbase.persistent.namespace=$namespace")
     }
 
-    protected int getSessionTimeout() {
-        return sessionCouchbase.timeoutInSeconds * 1000
+    protected void clearBucket() {
+        if (couchbase) {
+            couchbase.couchbaseBucket.bucketManager().flush()
+        }
     }
 
-    protected String getCurrentSessionId() {
-        return parse(currentSessionCookie)[0].value
+    protected boolean currentSessionExists() {
+        return couchbase.exists(getCurrentSessionId())
+    }
+
+    protected int getSessionTimeout() {
+        return sessionCouchbase.timeoutInSeconds * 1000
     }
 
     protected void setSessionAttribute(Message attribute) {
@@ -110,11 +119,15 @@ abstract class BasicSpec extends Specification {
         currentSessionCookie = null
     }
 
+    private String getCurrentSessionId() {
+        return parse(currentSessionCookie)[0].value
+    }
+
     private <T> ResponseEntity<T> post(String path, Object body, int port = getPort(), Class<T> responseType = Object) {
         def url = createUrl(path, port)
         HttpHeaders headers = addSessionCookie()
         def request = new HttpEntity<>(body, headers)
-        def response = restTemplate.postForEntity(url, request, responseType)
+        def response = rest.postForEntity(url, request, responseType)
         saveSessionCookie(response)
         return response
     }
@@ -123,7 +136,7 @@ abstract class BasicSpec extends Specification {
         def url = createUrl(path, port)
         HttpHeaders headers = addSessionCookie()
         def request = new HttpEntity<>(headers)
-        def response = restTemplate.exchange(url, GET, request, responseType) as ResponseEntity<T>
+        def response = rest.exchange(url, GET, request, responseType) as ResponseEntity<T>
         saveSessionCookie(response)
         return response
     }
@@ -132,7 +145,7 @@ abstract class BasicSpec extends Specification {
         def url = createUrl(path, port)
         HttpHeaders headers = addSessionCookie()
         def request = new HttpEntity<>(headers)
-        def response = restTemplate.exchange(url, DELETE, request, Object)
+        def response = rest.exchange(url, DELETE, request, Object)
         saveSessionCookie(response)
     }
 
@@ -140,7 +153,7 @@ abstract class BasicSpec extends Specification {
         def url = createUrl(path, port)
         HttpHeaders headers = addSessionCookie()
         def request = new HttpEntity<>(headers)
-        def response = restTemplate.exchange(url, PUT, request, Object)
+        def response = rest.exchange(url, PUT, request, Object)
         saveSessionCookie(response)
         return response
     }

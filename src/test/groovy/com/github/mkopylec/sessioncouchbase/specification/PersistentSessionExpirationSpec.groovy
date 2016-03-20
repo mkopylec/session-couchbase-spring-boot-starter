@@ -1,24 +1,33 @@
 package com.github.mkopylec.sessioncouchbase.specification
 
 import com.github.mkopylec.sessioncouchbase.Message
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.couchbase.core.CouchbaseTemplate
+
+import static com.github.mkopylec.sessioncouchbase.assertions.Assertions.assertThat
 
 class PersistentSessionExpirationSpec extends SessionExpirationSpec {
-
-    @Autowired
-    private CouchbaseTemplate couchbaseTemplate
 
     def "Should not get Couchbase session document when session has expired"() {
         given:
         def message = new Message(text: 'power rangers 2', number: 10001)
         setSessionAttribute message
-        sleep(sessionTimeout + 1000)
 
         when:
-        def session = couchbaseTemplate.findById(currentSessionId, Object)
+        sleep(sessionTimeout + 1000)
 
         then:
-        session == null
+        !currentSessionExists()
+    }
+
+    def "Should not get Couchbase principal sessions document when sessions have expired"() {
+        given:
+        clearBucket()
+        setPrincipalSessionAttribute()
+
+        when:
+        sleep(sessionTimeout + 1000)
+
+        then:
+        assertThat(getPrincipalSessions())
+                .hasNoSessionIds()
     }
 }
