@@ -23,6 +23,7 @@ class PrincipalSessionsSpec extends BasicSpec {
 
     def "Should not get principal session when it was invalidated"() {
         given:
+        clearBucket()
         setPrincipalSessionAttribute()
 
         when:

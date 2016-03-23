@@ -138,7 +138,7 @@ abstract class BasicSpec extends Specification {
         currentSessionCookie = null
     }
 
-    private void clearBucket() {
+    protected void clearBucket() {
         if (couchbase) {
             couchbase.queryN1QL(simple('DELETE FROM default'));
         }
