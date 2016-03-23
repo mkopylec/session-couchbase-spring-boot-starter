@@ -140,6 +140,7 @@ abstract class BasicSpec extends Specification {
 
     protected void clearBucket() {
         if (couchbase) {
+            println 'Clearing bucket...'
             couchbase.queryN1QL(simple('DELETE FROM default'));
         }
     }
