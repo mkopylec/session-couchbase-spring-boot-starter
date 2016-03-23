@@ -141,7 +141,17 @@ abstract class BasicSpec extends Specification {
     protected void clearBucket() {
         if (couchbase) {
             println 'Clearing bucket...'
-            couchbase.queryN1QL(simple('DELETE FROM default'));
+            def result = couchbase.queryN1QL(simple('DELETE FROM default'));
+            println result.allRows()
+            println result.clientContextId()
+            println result.errors()
+            println result.finalSuccess()
+            println result.info()
+            println result.parseSuccess()
+            println result.requestId()
+            println result.rows()
+            println result.signature()
+            println result.status()
         }
     }
 
