@@ -45,6 +45,7 @@ abstract class BasicSpec extends Specification {
 
     void cleanup() {
         clearSessionCookie()
+        stopExtraApplicationInstance()
     }
 
     protected void startExtraApplicationInstance(String namespace = sessionCouchbase.persistent.namespace) {
@@ -59,8 +60,10 @@ abstract class BasicSpec extends Specification {
     }
 
     protected void stopExtraApplicationInstance() {
-        instance.runnerClass.getMethod('stop').invoke(instance.runnerInstance)
-        instance = null
+        if (instance) {
+            instance.runnerClass.getMethod('stop').invoke(instance.runnerInstance)
+            instance = null
+        }
     }
 
     protected boolean currentSessionExists() {
