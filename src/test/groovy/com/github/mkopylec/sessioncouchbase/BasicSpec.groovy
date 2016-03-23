@@ -189,7 +189,9 @@ abstract class BasicSpec extends Specification {
     }
 
     private int getPort() {
-        return context.embeddedServletContainer.port
+        def port = context.embeddedServletContainer.port
+        println 'Got port: ' + port
+        return port
     }
 
     private HttpHeaders addSessionCookie() {
