@@ -1,5 +1,7 @@
 package com.github.mkopylec.sessioncouchbase
 
+import com.github.mkopylec.sessioncouchbase.utils.ApplicationInstance
+import com.github.mkopylec.sessioncouchbase.utils.ApplicationInstanceRunner
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.embedded.EmbeddedWebApplicationContext
 import org.springframework.boot.test.SpringApplicationContextLoader
@@ -13,8 +15,8 @@ import org.springframework.web.client.RestTemplate
 import spock.lang.Shared
 import spock.lang.Specification
 
+import static com.couchbase.client.java.query.N1qlQuery.simple
 import static java.net.HttpCookie.parse
-import static org.springframework.boot.SpringApplication.run
 import static org.springframework.http.HttpHeaders.COOKIE
 import static org.springframework.http.HttpMethod.DELETE
 import static org.springframework.http.HttpMethod.GET
@@ -30,21 +32,35 @@ abstract class BasicSpec extends Specification {
     private CouchbaseTemplate couchbase
     @Autowired
     private EmbeddedWebApplicationContext context
-    @Shared
-    private EmbeddedWebApplicationContext extraInstanceContext
+    private int extraInstancePort
+    private ApplicationInstance instance
     @Autowired
     private SessionCouchbaseProperties sessionCouchbase
     // Cannot store cookie in thread local because some tests starts more than one app instance. CANNOT run tests in parallel.
     private String currentSessionCookie
 
-    protected void startExtraApplicationInstance(String namespace = sessionCouchbase.persistent.namespace) {
-        extraInstanceContext = (EmbeddedWebApplicationContext) run(TestApplication, "--server.port=0", "--session-couchbase.persistent.namespace=$namespace")
+    void setup() {
+        clearBucket()
     }
 
-    protected void clearBucket() {
-        if (couchbase) {
-            couchbase.couchbaseBucket.bucketManager().flush()
-        }
+    void cleanup() {
+        clearSessionCookie()
+    }
+
+    protected void startExtraApplicationInstance(String namespace = sessionCouchbase.persistent.namespace) {
+        URL[] urls = [new File('/build/classes/test').toURI().toURL()]
+        def classLoader = new URLClassLoader(urls, getClass().classLoader)
+        def runnerClass = classLoader.loadClass(ApplicationInstanceRunner.class.name)
+        def runnerInstance = runnerClass.newInstance()
+        instance = new ApplicationInstance(runnerClass, runnerInstance)
+        runnerClass.getMethod('setNamespace', String).invoke(runnerInstance, namespace)
+        runnerClass.getMethod('run').invoke(runnerInstance)
+        extraInstancePort = runnerClass.getMethod('getPort').invoke(runnerInstance) as int
+    }
+
+    protected void stopExtraApplicationInstance() {
+        instance.runnerClass.getMethod('stop').invoke(instance.runnerInstance)
+        instance = null
     }
 
     protected boolean currentSessionExists() {
@@ -64,7 +80,7 @@ abstract class BasicSpec extends Specification {
     }
 
     protected void setSessionAttributeToExtraInstance(Message attribute) {
-        post('session/attribute', attribute, getExtraInstancePort())
+        post('session/attribute', attribute, extraInstancePort)
     }
 
     protected void deleteSessionAttribute() {
@@ -80,11 +96,11 @@ abstract class BasicSpec extends Specification {
     }
 
     protected ResponseEntity<Message> getSessionAttributeFromExtraInstance() {
-        return get('session/attribute', Message, getExtraInstancePort())
+        return get('session/attribute', Message, extraInstancePort)
     }
 
     protected ResponseEntity<Message> getGlobalSessionAttributeFromExtraInstance() {
-        return get('session/attribute/global', Message, getExtraInstancePort())
+        return get('session/attribute/global', Message, extraInstancePort)
     }
 
     protected void setSessionBean(Message attribute) {
@@ -108,7 +124,7 @@ abstract class BasicSpec extends Specification {
     }
 
     protected String setPrincipalSessionAttributeToExtraInstance() {
-        return post('session/principal', null, getExtraInstancePort(), String).body
+        return post('session/principal', null, extraInstancePort, String).body
     }
 
     protected ResponseEntity<Set<String>> getPrincipalSessions() {
@@ -117,6 +133,12 @@ abstract class BasicSpec extends Specification {
 
     protected void clearSessionCookie() {
         currentSessionCookie = null
+    }
+
+    private void clearBucket() {
+        if (couchbase) {
+            couchbase.queryN1QL(simple('DELETE FROM default'));
+        }
     }
 
     private String getCurrentSessionId() {
@@ -166,10 +188,6 @@ abstract class BasicSpec extends Specification {
         return context.embeddedServletContainer.port
     }
 
-    private int getExtraInstancePort() {
-        return extraInstanceContext.embeddedServletContainer.port
-    }
-
     private HttpHeaders addSessionCookie() {
         def headers = new HttpHeaders()
         headers.set(COOKIE, currentSessionCookie)
@@ -179,11 +197,7 @@ abstract class BasicSpec extends Specification {
     private void saveSessionCookie(ResponseEntity response) {
         def cookie = response.headers.get('Set-Cookie')
         if (cookie != null) {
-            currentSessionCookie = cookie;
+            currentSessionCookie = cookie
         }
-    }
-
-    void cleanup() {
-        clearSessionCookie()
     }
 }

@@ -52,8 +52,6 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
         dao.save(sessionDocument);
         dao.updateExpirationTime(session.getId(), getSessionDocumentExpiration());
 
-        log.debug("HTTP session created with ID {}", session.getId());
-
         log.debug("Created HTTP session with ID {}", session.getId());
 
         return session;
@@ -80,9 +78,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
             log.debug("Added principals {} session with ID {}", principal, session.getId());
             dao.updateExpirationTime(principal, getSessionDocumentExpiration());
         }
-
         dao.updateExpirationTime(session.getId(), getSessionDocumentExpiration());
-
         log.debug("Saved HTTP session with ID {}", session.getId());
     }
 

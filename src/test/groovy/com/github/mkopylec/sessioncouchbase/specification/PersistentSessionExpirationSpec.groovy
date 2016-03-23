@@ -20,7 +20,6 @@ class PersistentSessionExpirationSpec extends SessionExpirationSpec {
 
     def "Should not get Couchbase principal sessions document when sessions have expired"() {
         given:
-        clearBucket()
         setPrincipalSessionAttribute()
 
         when:

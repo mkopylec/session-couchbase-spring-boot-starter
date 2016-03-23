@@ -14,6 +14,7 @@ import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.session.FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME;
 import static org.springframework.util.Assert.hasText;
@@ -161,7 +162,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     }
 
     public boolean isPrincipalSession() {
-        return principalSession;
+        return isNotBlank(getPrincipalAttribute());
     }
 
     public String getPrincipalAttribute() {

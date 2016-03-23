@@ -32,8 +32,4 @@ class PrincipalSessionsSpec extends BasicSpec {
         assertThat(getPrincipalSessions())
                 .hasNoSessionIds()
     }
-
-    void setup() {
-        clearBucket()
-    }
 }

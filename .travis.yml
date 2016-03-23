@@ -8,7 +8,7 @@ before_install:
   - sudo dpkg -i couchbase-server-community_4.0.0-ubuntu12.04_amd64.deb
   - sleep 10
   - sudo /opt/couchbase/bin/couchbase-cli cluster-init -c localhost:8091 -u Administrator -p password --cluster-ramsize=256 --service=data,index,query
-  - sudo /opt/couchbase/bin/couchbase-cli bucket-create -c localhost:8091 -u Administrator -p password --bucket=default --bucket-ramsize=256 --bucket-replica=1 --enable-flush=1
+  - sudo /opt/couchbase/bin/couchbase-cli bucket-create -c localhost:8091 -u Administrator -p password --bucket=default --bucket-ramsize=256 --bucket-replica=1
 script:
   - ./gradlew test -i
 after_success:
