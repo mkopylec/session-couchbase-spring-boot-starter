@@ -65,7 +65,7 @@ Optionally you can override default Couchbase client settings by creating `Couch
 ```java
 ...
 @Primary
-@Bean(destroyMethod = "shutdown", name = BeanNames.COUCHBASE_ENV)
+@Bean(destroyMethod = "shutdown", name = "couchbaseEnv")
 public CouchbaseEnvironment couchbaseEnvironment() {
     ...
 }
