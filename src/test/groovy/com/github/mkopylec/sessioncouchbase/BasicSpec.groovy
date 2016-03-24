@@ -1,5 +1,6 @@
 package com.github.mkopylec.sessioncouchbase
 
+import com.couchbase.client.java.query.N1qlQueryResult
 import com.github.mkopylec.sessioncouchbase.utils.ApplicationInstance
 import com.github.mkopylec.sessioncouchbase.utils.ApplicationInstanceRunner
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,6 +27,8 @@ import static org.springframework.http.HttpMethod.PUT
 @ContextConfiguration(loader = SpringApplicationContextLoader, classes = TestApplication)
 abstract class BasicSpec extends Specification {
 
+    private static boolean bucketIndexCreated = false
+
     @Shared
     private RestTemplate rest = new RestTemplate()
     @Autowired(required = false)
@@ -40,6 +43,7 @@ abstract class BasicSpec extends Specification {
     private String currentSessionCookie
 
     void setup() {
+        createBucketIndex()
         clearBucket()
     }
 
@@ -140,18 +144,26 @@ abstract class BasicSpec extends Specification {
 
     protected void clearBucket() {
         if (couchbase) {
-            println 'Clearing bucket...'
-            def result = couchbase.queryN1QL(simple('DELETE FROM default'));
-            println result.allRows()
-            println result.clientContextId()
-            println result.errors()
-            println result.finalSuccess()
-            println result.info()
-            println result.parseSuccess()
-            println result.requestId()
-            println result.rows()
-            println result.signature()
-            println result.status()
+            def result = couchbase.queryN1QL(simple("DELETE FROM $sessionCouchbase.persistent.bucketName"))
+            failOnErrors(result)
+        }
+    }
+
+    private void createBucketIndex() {
+        if (!bucketIndexCreated && couchbase) {
+            def result = couchbase.queryN1QL(simple('SELECT * FROM system:indexes'))
+            failOnErrors(result)
+            if (result.allRows().empty) {
+                result = couchbase.queryN1QL(simple("CREATE PRIMARY INDEX ON $sessionCouchbase.persistent.bucketName USING GSI"))
+                failOnErrors(result)
+            }
+            bucketIndexCreated = true
+        }
+    }
+
+    private static void failOnErrors(N1qlQueryResult result) {
+        if (!result.finalSuccess()) {
+            throw new RuntimeException(result.errors().toString())
         }
     }
 
@@ -199,9 +211,7 @@ abstract class BasicSpec extends Specification {
     }
 
     private int getPort() {
-        def port = context.embeddedServletContainer.port
-        println 'Got port: ' + port
-        return port
+        return context.embeddedServletContainer.port
     }
 
     private HttpHeaders addSessionCookie() {
