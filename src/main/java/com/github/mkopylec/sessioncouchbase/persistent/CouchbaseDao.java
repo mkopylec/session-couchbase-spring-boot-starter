@@ -21,6 +21,7 @@ public class CouchbaseDao {
     }
 
     public void updateSession(JsonObject attributes, String namespace, String id) {
+        //TODO there is no exceptions when n1ql fails!
         couchbase.queryN1QL(parameterized("UPDATE default USE KEYS $1 SET data.`" + namespace + "` = $2", from(id, attributes)));
     }
 
