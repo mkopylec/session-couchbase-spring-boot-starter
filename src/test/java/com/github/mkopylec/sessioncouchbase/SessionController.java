@@ -22,7 +22,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 @RequestMapping("session")
 public class SessionController {
 
-    public static final String PRINCIPAL_NAME = "user";
+    private static final String PRINCIPAL_NAME = "user";
     private static final String SESSION_ATTRIBUTE_NAME = "attribute";
 
     @Autowired(required = false)
