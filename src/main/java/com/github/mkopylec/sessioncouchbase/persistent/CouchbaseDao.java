@@ -24,8 +24,8 @@ public class CouchbaseDao {
         couchbase.queryN1QL(parameterized("UPDATE default USE KEYS $1 SET data.`" + namespace + "` = $2", from(id, attributes)));
     }
 
-    public void updateAppendPrincipalSession(String principal, String sessionId) {
-        couchbase.queryN1QL(parameterized("UPDATE default USE KEYS $1 SET sessionIds = ARRAY_APPEND(sessionIds, $2)", from(principal, sessionId)));
+    public void updatePutPrincipalSession(String principal, String sessionId) {
+        couchbase.queryN1QL(parameterized("UPDATE default USE KEYS $1 SET sessionIds = ARRAY_PUT(sessionIds, $2)", from(principal, sessionId)));
     }
 
     public void updateRemovePrincipalSession(String principal, String sessionId) {

@@ -68,15 +68,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
         }
 
         if (session.isPrincipalSession()) {
-            String principal = session.getPrincipalAttribute();
-            if (dao.exists(principal)) {
-                dao.updateAppendPrincipalSession(principal, session.getId());
-            } else {
-                PrincipalSessionsDocument sessionsDocument = new PrincipalSessionsDocument(principal, singletonList(session.getId()));
-                dao.save(sessionsDocument);
-            }
-            log.debug("Added principals {} session with ID {}", principal, session.getId());
-            dao.updateExpirationTime(principal, getSessionDocumentExpiration());
+            savePrincipalSession(session);
         }
         dao.updateExpirationTime(session.getId(), getSessionDocumentExpiration());
         log.debug("Saved HTTP session with ID {}", session.getId());
@@ -141,6 +133,18 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
 
     protected int getSessionDocumentExpiration() {
         return sessionTimeout + SESSION_DOCUMENT_EXPIRATION_DELAY_IN_SECONDS;
+    }
+
+    protected void savePrincipalSession(CouchbaseSession session) {
+        String principal = session.getPrincipalAttribute();
+        if (dao.exists(principal)) {
+            dao.updatePutPrincipalSession(principal, session.getId());
+        } else {
+            PrincipalSessionsDocument sessionsDocument = new PrincipalSessionsDocument(principal, singletonList(session.getId()));
+            dao.save(sessionsDocument);
+        }
+        log.debug("Added principals {} session with ID {}", principal, session.getId());
+        dao.updateExpirationTime(principal, getSessionDocumentExpiration());
     }
 
     protected void deleteSession(CouchbaseSession session) {
