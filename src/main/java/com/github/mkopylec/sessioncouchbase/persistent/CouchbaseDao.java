@@ -2,7 +2,9 @@ package com.github.mkopylec.sessioncouchbase.persistent;
 
 import com.couchbase.client.java.document.json.JsonObject;
 import com.couchbase.client.java.error.DocumentDoesNotExistException;
+import com.couchbase.client.java.query.N1qlQueryResult;
 import com.couchbase.client.java.query.N1qlQueryRow;
+import org.springframework.data.couchbase.core.CouchbaseQueryExecutionException;
 import org.springframework.data.couchbase.core.CouchbaseTemplate;
 
 import java.util.List;
@@ -21,21 +23,29 @@ public class CouchbaseDao {
     }
 
     public void updateSession(JsonObject attributes, String namespace, String id) {
-        //TODO there is no exceptions when n1ql fails!
-        couchbase.queryN1QL(parameterized("UPDATE default USE KEYS $1 SET data.`" + namespace + "` = $2", from(id, attributes)));
+        String statement = "UPDATE default USE KEYS $1 SET data.`" + namespace + "` = $2";
+        N1qlQueryResult result = couchbase.queryN1QL(parameterized(statement, from(id, attributes)));
+        failOnError(statement, result);
     }
 
     public void updatePutPrincipalSession(String principal, String sessionId) {
-        couchbase.queryN1QL(parameterized("UPDATE default USE KEYS $1 SET sessionIds = ARRAY_PUT(sessionIds, $2)", from(principal, sessionId)));
+        String statement = "UPDATE default USE KEYS $1 SET sessionIds = ARRAY_PUT(sessionIds, $2)";
+        N1qlQueryResult result = couchbase.queryN1QL(parameterized(statement, from(principal, sessionId)));
+        failOnError(statement, result);
     }
 
     public void updateRemovePrincipalSession(String principal, String sessionId) {
-        couchbase.queryN1QL(parameterized("UPDATE default USE KEYS $1 SET sessionIds = ARRAY_REMOVE(sessionIds, $2)", from(principal, sessionId)));
+        String statement = "UPDATE default USE KEYS $1 SET sessionIds = ARRAY_REMOVE(sessionIds, $2)";
+        N1qlQueryResult result = couchbase.queryN1QL(parameterized(statement, from(principal, sessionId)));
+        failOnError(statement, result);
     }
 
     @SuppressWarnings("unchecked")
     public Map<String, Object> findSessionAttributes(String id, String namespace) {
-        List<N1qlQueryRow> attributes = couchbase.queryN1QL(parameterized("SELECT * FROM default.data.`" + namespace + "` USE KEYS $1", from(id))).allRows();
+        String statement = "SELECT * FROM default.data.`" + namespace + "` USE KEYS $1";
+        N1qlQueryResult result = couchbase.queryN1QL(parameterized(statement, from(id)));
+        failOnError(statement, result);
+        List<N1qlQueryRow> attributes = result.allRows();
         isTrue(attributes.size() < 2, "Invalid HTTP session state. Multiple namespaces '" + namespace + "' for session ID '" + id + "'");
         if (attributes.isEmpty()) {
             return null;
@@ -72,6 +82,12 @@ public class CouchbaseDao {
             couchbase.remove(id);
         } catch (DocumentDoesNotExistException ex) {
             //Do nothing
+        }
+    }
+
+    private void failOnError(String statement, N1qlQueryResult result) {
+        if (!result.finalSuccess()) {
+            throw new CouchbaseQueryExecutionException("Error executing N1QL statement '" + statement + "'. " + result.errors());
         }
     }
 }
