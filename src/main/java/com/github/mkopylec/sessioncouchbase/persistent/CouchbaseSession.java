@@ -15,6 +15,7 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.removeStart;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.session.FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME;
 import static org.springframework.util.Assert.hasText;
@@ -187,7 +188,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     }
 
     protected String getNameFromGlobalName(String globalAttributeName) {
-        return globalAttributeName.replaceFirst(GLOBAL_ATTRIBUTE_NAME_PREFIX, "");
+        return removeStart(globalAttributeName, GLOBAL_ATTRIBUTE_NAME_PREFIX);
     }
 
     protected boolean containsPrincipalAttribute() {

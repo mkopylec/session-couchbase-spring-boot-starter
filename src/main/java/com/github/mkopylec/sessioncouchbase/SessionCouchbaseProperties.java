@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 /**
  * Session couchbase configuration properties.
@@ -66,7 +67,7 @@ public class SessionCouchbaseProperties {
         /**
          * Couchbase bucket password.
          */
-        private String password = "";
+        private String password = EMPTY;
 
         public String getNamespace() {
             return namespace;
