@@ -59,7 +59,7 @@ abstract class BasicSpec extends Specification {
         def runnerInstance = runnerClass.newInstance()
         instance = new ApplicationInstance(runnerClass, runnerInstance)
         runnerClass.getMethod('setNamespace', String).invoke(runnerInstance, namespace)
-        runnerClass.getMethod('setPrincipalSessionsEnabled', boolean).invoke(runnerInstance, sessionCouchbase.principalSessions.enabled)
+        runnerClass.getMethod('setPrincipalSessionsEnabled', boolean).invoke(runnerInstance, sessionCouchbase.persistent.principalSessions.enabled)
         runnerClass.getMethod('run').invoke(runnerInstance)
         extraInstancePort = runnerClass.getMethod('getPort').invoke(runnerInstance) as int
     }
@@ -145,7 +145,7 @@ abstract class BasicSpec extends Specification {
 
     protected void clearBucket() {
         if (couchbase) {
-            def result = couchbase.queryN1QL(simple("DELETE FROM $sessionCouchbase.persistent.bucketName"))
+            def result = couchbase.queryN1QL(simple("DELETE FROM $sessionCouchbase.persistent.couchbase.bucketName"))
             failOnErrors(result)
         }
     }
@@ -155,7 +155,7 @@ abstract class BasicSpec extends Specification {
             def result = couchbase.queryN1QL(simple('SELECT * FROM system:indexes'))
             failOnErrors(result)
             if (result.allRows().empty) {
-                result = couchbase.queryN1QL(simple("CREATE PRIMARY INDEX ON $sessionCouchbase.persistent.bucketName USING GSI"))
+                result = couchbase.queryN1QL(simple("CREATE PRIMARY INDEX ON $sessionCouchbase.persistent.couchbase.bucketName USING GSI"))
                 failOnErrors(result)
             }
             bucketIndexCreated = true

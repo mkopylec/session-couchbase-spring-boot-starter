@@ -55,9 +55,10 @@ Configure Couchbase connection in _application.yml_ file:
 ```yaml
 session-couchbase.persistent:
     namespace: <application_namespace>
-    hosts: <list_of_couchbase_cluster_hosts>
-    bucket-name: <couchbase_bucket_name>
-    password: <couchbase_bucket_password>
+    couchbase:
+        hosts: <list_of_couchbase_cluster_hosts>
+        bucket-name: <couchbase_bucket_name>
+        password: <couchbase_bucket_password>
 ```
 
 Optionally you can override default Couchbase client settings by creating `CouchbaseEnvironment` bean:
@@ -128,9 +129,12 @@ session-couchbase:
     timeout-in-seconds: 1800 # HTTP session timeout.
     persistent:
         namespace: # HTTP session application namespace under which session data must be stored.
-        hosts: localhost # Couchbase cluster hosts.
-        bucket-name: default # Couchbase bucket name where session data must be stored.
-        password: # Couchbase bucket password.
+        couchbase:
+            hosts: localhost # Couchbase cluster hosts.
+            bucket-name: default # Couchbase bucket name where session data must be stored.
+            password: # Couchbase bucket password.
+        principal-sessions:
+            enabled: false # Flag for enabling and disabling finding HTTP sessions by principal. Can significantly decrease application performance when enabled.
     in-memory:
         enabled: false # Flag for enabling and disabling in-memory mode.
 ```

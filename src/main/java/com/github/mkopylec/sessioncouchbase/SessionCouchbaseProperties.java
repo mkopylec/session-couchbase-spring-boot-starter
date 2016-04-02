@@ -25,10 +25,6 @@ public class SessionCouchbaseProperties {
      * Properties responsible for in-memory mode behaviour.
      */
     private InMemory inMemory = new InMemory();
-    /**
-     * Properties responsible for managing principal HTTP sessions.
-     */
-    private PrincipalSessions principalSessions = new PrincipalSessions();
 
     public int getTimeoutInSeconds() {
         return timeoutInSeconds;
@@ -54,20 +50,64 @@ public class SessionCouchbaseProperties {
         this.inMemory = inMemory;
     }
 
-    public PrincipalSessions getPrincipalSessions() {
-        return principalSessions;
-    }
-
-    public void setPrincipalSessions(PrincipalSessions principalSessions) {
-        this.principalSessions = principalSessions;
-    }
-
     public static class Persistent {
 
         /**
          * HTTP session application namespace under which session data must be stored.
          */
         private String namespace;
+        /**
+         * Properties responsible Couchbase connection.
+         */
+        private Couchbase couchbase;
+        /**
+         * Properties responsible for managing principal HTTP sessions.
+         */
+        private PrincipalSessions principalSessions = new PrincipalSessions();
+
+        public String getNamespace() {
+            return namespace;
+        }
+
+        public void setNamespace(String namespace) {
+            this.namespace = namespace;
+        }
+
+        public Couchbase getCouchbase() {
+            return couchbase;
+        }
+
+        public void setCouchbase(Couchbase couchbase) {
+            this.couchbase = couchbase;
+        }
+
+        public PrincipalSessions getPrincipalSessions() {
+            return principalSessions;
+        }
+
+        public void setPrincipalSessions(PrincipalSessions principalSessions) {
+            this.principalSessions = principalSessions;
+        }
+    }
+
+    public static class InMemory {
+
+        /**
+         * Flag for enabling and disabling in-memory mode.
+         */
+        private boolean enabled = false;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+    }
+
+    public static class Couchbase {
+
         /**
          * Couchbase cluster hosts.
          */
@@ -80,14 +120,6 @@ public class SessionCouchbaseProperties {
          * Couchbase bucket password.
          */
         private String password = EMPTY;
-
-        public String getNamespace() {
-            return namespace;
-        }
-
-        public void setNamespace(String namespace) {
-            this.namespace = namespace;
-        }
 
         public List<String> getHosts() {
             return hosts;
@@ -111,22 +143,6 @@ public class SessionCouchbaseProperties {
 
         public void setPassword(String password) {
             this.password = password;
-        }
-    }
-
-    public static class InMemory {
-
-        /**
-         * Flag for enabling and disabling in-memory mode.
-         */
-        private boolean enabled = false;
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
         }
     }
 

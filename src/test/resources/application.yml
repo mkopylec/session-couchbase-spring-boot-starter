@@ -2,12 +2,13 @@ session-couchbase:
   timeout-in-seconds: 1800
   persistent:
     namespace: test-application
-    hosts: localhost
-    bucket-name: default
-    password:
+    couchbase:
+      hosts: localhost
+      bucket-name: default
+      password:
+    principal-sessions:
+      enabled: false
   in-memory:
-    enabled: false
-  principal-sessions:
     enabled: false
 
 logging.level.com.github.mkopylec.sessioncouchbase: trace

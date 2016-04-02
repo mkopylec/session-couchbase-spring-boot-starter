@@ -48,7 +48,7 @@ public class PersistentConfiguration extends AbstractCouchbaseConfiguration {
     @ConditionalOnMissingBean
     public SessionRepository sessionRepository(CouchbaseDao dao, ObjectMapper mapper, Serializer serializer) {
         return new CouchbaseSessionRepository(
-                dao, sessionCouchbase.getPersistent().getNamespace(), mapper, sessionCouchbase.getTimeoutInSeconds(), serializer, sessionCouchbase.getPrincipalSessions().isEnabled()
+                dao, sessionCouchbase.getPersistent().getNamespace(), mapper, sessionCouchbase.getTimeoutInSeconds(), serializer, sessionCouchbase.getPersistent().getPrincipalSessions().isEnabled()
         );
     }
 
@@ -60,16 +60,16 @@ public class PersistentConfiguration extends AbstractCouchbaseConfiguration {
 
     @Override
     protected List<String> getBootstrapHosts() {
-        return sessionCouchbase.getPersistent().getHosts();
+        return sessionCouchbase.getPersistent().getCouchbase().getHosts();
     }
 
     @Override
     protected String getBucketName() {
-        return sessionCouchbase.getPersistent().getBucketName();
+        return sessionCouchbase.getPersistent().getCouchbase().getBucketName();
     }
 
     @Override
     protected String getBucketPassword() {
-        return sessionCouchbase.getPersistent().getPassword();
+        return sessionCouchbase.getPersistent().getCouchbase().getPassword();
     }
 }

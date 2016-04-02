@@ -59,7 +59,7 @@ class ApplicationInstanceRunner {
 
         @Override
         public void run() {
-            context = SpringApplication.run(TestApplication, '--server.port=0', "--session-couchbase.persistent.namespace=$namespace", "--session-couchbase.principal-sessions.enabled=$principalSessionsEnabled") as EmbeddedWebApplicationContext
+            context = SpringApplication.run(TestApplication, '--server.port=0', "--session-couchbase.persistent.namespace=$namespace", "--session-couchbase.persistent.principal-sessions.enabled=$principalSessionsEnabled") as EmbeddedWebApplicationContext
             port = context.embeddedServletContainer.port
             synchronized (monitor) {
                 shouldWait = false

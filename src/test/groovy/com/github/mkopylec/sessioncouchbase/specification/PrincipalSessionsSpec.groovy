@@ -5,7 +5,7 @@ import org.springframework.test.context.TestPropertySource
 
 import static com.github.mkopylec.sessioncouchbase.assertions.Assertions.assertThat
 
-@TestPropertySource(properties = ['session-couchbase.principal-sessions.enabled: true'])
+@TestPropertySource(properties = ['session-couchbase.persistent.principal-sessions.enabled: true'])
 class PrincipalSessionsSpec extends BasicSpec {
 
     def "Should get principal HTTP sessions when they exist"() {
