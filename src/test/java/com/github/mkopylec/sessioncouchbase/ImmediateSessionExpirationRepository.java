@@ -14,7 +14,7 @@ public class ImmediateSessionExpirationRepository extends CouchbaseSessionReposi
 
     @Autowired
     public ImmediateSessionExpirationRepository(CouchbaseDao dao, ObjectMapper mapper, Serializer serializer, SessionCouchbaseProperties sessionCouchbase) {
-        super(dao, sessionCouchbase.getPersistent().getNamespace(), mapper, sessionCouchbase.getTimeoutInSeconds(), serializer);
+        super(dao, sessionCouchbase.getPersistent().getNamespace(), mapper, sessionCouchbase.getTimeoutInSeconds(), serializer, sessionCouchbase.getPrincipalSessions().isEnabled());
     }
 
     @Override

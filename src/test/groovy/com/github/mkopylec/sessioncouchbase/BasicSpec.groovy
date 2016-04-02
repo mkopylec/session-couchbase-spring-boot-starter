@@ -59,6 +59,7 @@ abstract class BasicSpec extends Specification {
         def runnerInstance = runnerClass.newInstance()
         instance = new ApplicationInstance(runnerClass, runnerInstance)
         runnerClass.getMethod('setNamespace', String).invoke(runnerInstance, namespace)
+        runnerClass.getMethod('setPrincipalSessionsEnabled', boolean).invoke(runnerInstance, sessionCouchbase.principalSessions.enabled)
         runnerClass.getMethod('run').invoke(runnerInstance)
         extraInstancePort = runnerClass.getMethod('getPort').invoke(runnerInstance) as int
     }

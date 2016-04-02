@@ -28,8 +28,16 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
     protected final String namespace;
     protected final int sessionTimeout;
     protected final Serializer serializer;
+    protected final boolean principalSessionsEnabled;
 
-    public CouchbaseSessionRepository(CouchbaseDao dao, String namespace, ObjectMapper mapper, int sessionTimeout, Serializer serializer) {
+    public CouchbaseSessionRepository(
+            CouchbaseDao dao,
+            String namespace,
+            ObjectMapper mapper,
+            int sessionTimeout,
+            Serializer serializer,
+            boolean principalSessionsEnabled
+    ) {
         notNull(dao, "Missing couchbase data access object");
         notNull(mapper, "Missing JSON object mapper");
         hasText(namespace, "Empty HTTP session namespace");
@@ -40,6 +48,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
         this.namespace = namespace.trim();
         this.sessionTimeout = sessionTimeout;
         this.serializer = serializer;
+        this.principalSessionsEnabled = principalSessionsEnabled;
     }
 
     @Override
@@ -67,7 +76,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
             dao.updateSession(from(serializedNamespace), namespace, session.getId());
         }
 
-        if (session.isPrincipalSession()) {
+        if (isOperationOnPrincipalSessionsRequired(session)) {
             savePrincipalSession(session);
         }
         dao.updateExpirationTime(session.getId(), getSessionDocumentExpiration());
@@ -112,6 +121,9 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
 
     @Override
     public Map<String, CouchbaseSession> findByIndexNameAndIndexValue(String indexName, String indexValue) {
+        if (!principalSessionsEnabled) {
+            throw new IllegalStateException("Cannot get principal HTTP sessions. Enable getting principal HTTP sessions using 'session-couchbase.principal-sessions.enabled' configuration property.");
+        }
         if (!PRINCIPAL_NAME_INDEX_NAME.equals(indexName)) {
             return emptyMap();
         }
@@ -148,11 +160,15 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
     }
 
     protected void deleteSession(CouchbaseSession session) {
-        if (session.isPrincipalSession()) {
+        if (isOperationOnPrincipalSessionsRequired(session)) {
             dao.updateRemovePrincipalSession(session.getPrincipalAttribute(), session.getId());
             log.debug("Removed principals {} session with ID {}", session.getPrincipalAttribute(), session.getId());
         }
         dao.delete(session.getId());
         log.debug("Deleted HTTP session with ID {}", session.getId());
+    }
+
+    private boolean isOperationOnPrincipalSessionsRequired(CouchbaseSession session) {
+        return principalSessionsEnabled && session.isPrincipalSession();
     }
 }

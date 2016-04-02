@@ -1,12 +1,14 @@
 package com.github.mkopylec.sessioncouchbase.specification
 
 import com.github.mkopylec.sessioncouchbase.BasicSpec
+import org.springframework.test.context.TestPropertySource
 
 import static com.github.mkopylec.sessioncouchbase.assertions.Assertions.assertThat
 
+@TestPropertySource(properties = ['session-couchbase.principal-sessions.enabled: true'])
 class PrincipalSessionsSpec extends BasicSpec {
 
-    def "Should get principal sessions when they exist"() {
+    def "Should get principal HTTP sessions when they exist"() {
         given:
         def firstSessionId = setPrincipalSessionAttribute()
         clearSessionCookie()
@@ -21,9 +23,8 @@ class PrincipalSessionsSpec extends BasicSpec {
                 .hasSessionIds(firstSessionId, secondSessionId)
     }
 
-    def "Should not get principal session when it was invalidated"() {
+    def "Should not get principal HTTP session when it was invalidated"() {
         given:
-        clearBucket()
         setPrincipalSessionAttribute()
 
         when:

@@ -25,6 +25,10 @@ public class SessionCouchbaseProperties {
      * Properties responsible for in-memory mode behaviour.
      */
     private InMemory inMemory = new InMemory();
+    /**
+     * Properties responsible for managing principal HTTP sessions.
+     */
+    private PrincipalSessions principalSessions = new PrincipalSessions();
 
     public int getTimeoutInSeconds() {
         return timeoutInSeconds;
@@ -48,6 +52,14 @@ public class SessionCouchbaseProperties {
 
     public void setInMemory(InMemory inMemory) {
         this.inMemory = inMemory;
+    }
+
+    public PrincipalSessions getPrincipalSessions() {
+        return principalSessions;
+    }
+
+    public void setPrincipalSessions(PrincipalSessions principalSessions) {
+        this.principalSessions = principalSessions;
     }
 
     public static class Persistent {
@@ -106,6 +118,22 @@ public class SessionCouchbaseProperties {
 
         /**
          * Flag for enabling and disabling in-memory mode.
+         */
+        private boolean enabled = false;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+    }
+
+    public static class PrincipalSessions {
+
+        /**
+         * Flag for enabling and disabling finding HTTP sessions by principal. Can significantly decrease application performance when enabled.
          */
         private boolean enabled = false;
 

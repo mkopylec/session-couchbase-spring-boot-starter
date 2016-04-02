@@ -1,6 +1,7 @@
 package com.github.mkopylec.sessioncouchbase.specification
 
 import com.github.mkopylec.sessioncouchbase.Message
+import org.springframework.web.client.HttpServerErrorException
 
 import static com.github.mkopylec.sessioncouchbase.assertions.Assertions.assertThat
 
@@ -26,5 +27,16 @@ class PersistentSessionSpec extends SessionSpec {
                 .hasBody(globalMessage)
         assertThat(getSessionAttributeFromExtraInstance())
                 .hasBody(extraMessage)
+    }
+
+    def "Should fail to get principal HTTP session when principal HTTP sessions are disabled"() {
+        given:
+        setPrincipalSessionAttribute()
+
+        when:
+        getPrincipalSessions()
+
+        then:
+        thrown HttpServerErrorException
     }
 }
