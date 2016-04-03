@@ -39,4 +39,24 @@ class PersistentSessionSpec extends SessionSpec {
         then:
         thrown HttpServerErrorException
     }
+
+    def "Should get global and application namespace HTTP session attribute names"() {
+        given:
+        def message = new Message(text: 'how do you do', number: 10)
+        setGlobalSessionAttribute message
+        setSessionAttribute message
+
+        when:
+        def response = getSessionAttributeNames()
+
+        then:
+        assertThat(response)
+                .hasSessionAttributeNames(
+                'attribute',
+                'com.github.mkopylec.sessioncouchbase.persistent.CouchbaseSession.global.attribute',
+                'com.github.mkopylec.sessioncouchbase.persistent.CouchbaseSession.global.$lastAccessedTime',
+                'com.github.mkopylec.sessioncouchbase.persistent.CouchbaseSession.global.$creationTime',
+                'com.github.mkopylec.sessioncouchbase.persistent.CouchbaseSession.global.$maxInactiveInterval'
+        )
+    }
 }

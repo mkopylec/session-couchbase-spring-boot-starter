@@ -135,8 +135,12 @@ abstract class BasicSpec extends Specification {
         return post('session/principal', null, extraInstancePort, String).body
     }
 
-    protected ResponseEntity<Set<String>> getPrincipalSessions() {
-        return get('session/principal', Set, getPort())
+    protected ResponseEntity<List<String>> getPrincipalSessions() {
+        return get('session/principal', List, getPort())
+    }
+
+    protected ResponseEntity<List<String>> getSessionAttributeNames() {
+        return get('session/attribute/names', List, getPort())
     }
 
     protected void clearSessionCookie() {

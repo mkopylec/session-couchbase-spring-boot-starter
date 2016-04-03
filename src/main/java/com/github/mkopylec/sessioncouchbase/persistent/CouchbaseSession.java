@@ -28,7 +28,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     public static final String CREATION_TIME_ATTRIBUTE = "$creationTime";
     public static final String LAST_ACCESSED_TIME_ATTRIBUTE = "$lastAccessedTime";
     public static final String MAX_INACTIVE_INTERVAL_ATTRIBUTE = "$maxInactiveInterval";
-    protected static final String GLOBAL_ATTRIBUTE_NAME_PREFIX = CouchbaseSession.class.getName() + ".global";
+    protected static final String GLOBAL_ATTRIBUTE_NAME_PREFIX = CouchbaseSession.class.getName() + ".global.";
 
     private static final Logger log = getLogger(CouchbaseSession.class);
 
@@ -111,7 +111,9 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     @Override
     public Set<String> getAttributeNames() {
         Set<String> attributesNames = new HashSet<>();
-        attributesNames.addAll(globalAttributes.keySet());
+        for (String attributeName : globalAttributes.keySet()) {
+            attributesNames.add(globalAttributeName(attributeName));
+        }
         attributesNames.addAll(namespaceAttributes.keySet());
         return unmodifiableSet(attributesNames);
     }
@@ -180,7 +182,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
 
     protected void checkAttributeName(String attributeName) {
         hasText(attributeName, "Empty HTTP session attribute name");
-        isTrue(!attributeName.equals(GLOBAL_ATTRIBUTE_NAME_PREFIX), "Empty HTTP session global attribute name");
+        isTrue(!attributeName.trim().equals(GLOBAL_ATTRIBUTE_NAME_PREFIX), "Empty HTTP session global attribute name");
     }
 
     protected boolean isGlobal(String attributeName) {

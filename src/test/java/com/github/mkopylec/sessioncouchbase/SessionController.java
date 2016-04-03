@@ -9,10 +9,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static com.github.mkopylec.sessioncouchbase.persistent.CouchbaseSession.globalAttributeName;
+import static java.util.Collections.list;
 import static org.springframework.session.FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -94,5 +96,10 @@ public class SessionController {
     public Set<String> getPrincipalSessions() {
         Map<String, CouchbaseSession> sessionsById = sessionRepository.findByIndexNameAndIndexValue(PRINCIPAL_NAME_INDEX_NAME, PRINCIPAL_NAME);
         return sessionsById.keySet();
+    }
+
+    @RequestMapping("attribute/names")
+    public List<String> getAttributeNames(HttpSession session) {
+        return list(session.getAttributeNames());
     }
 }

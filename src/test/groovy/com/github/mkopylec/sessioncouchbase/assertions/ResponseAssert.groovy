@@ -12,11 +12,11 @@ class ResponseAssert {
     }
 
     ResponseAssert hasSessionIds(String... sessionIds) {
-        assert actual.body != null
-        def actualSessionIds = actual.body as Set
-        assert actualSessionIds.size() == sessionIds.size()
-        assert actualSessionIds.containsAll(sessionIds)
-        return this
+        hasElements(sessionIds)
+    }
+
+    ResponseAssert hasSessionAttributeNames(String... attributeNames) {
+        return hasElements(attributeNames)
     }
 
     ResponseAssert hasNoSessionIds() {
@@ -33,6 +33,14 @@ class ResponseAssert {
 
     ResponseAssert hasNoBody() {
         assert actual.body == null
+        return this
+    }
+
+    private ResponseAssert hasElements(String... elements) {
+        assert actual.body != null
+        def actualSessionIds = actual.body as List
+        assert actualSessionIds.size() == elements.size()
+        assert actualSessionIds.containsAll(elements)
         return this
     }
 }
