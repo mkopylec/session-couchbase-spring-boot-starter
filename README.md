@@ -16,7 +16,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    compile 'com.github.mkopylec:session-couchbase-spring-boot-starter:1.2.1'
+    compile 'com.github.mkopylec:session-couchbase-spring-boot-starter:1.2.2'
 }
 ```
 
