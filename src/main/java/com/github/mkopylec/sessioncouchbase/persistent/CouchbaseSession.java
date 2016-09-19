@@ -60,12 +60,12 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
 
     @Override
     public long getCreationTime() {
-        return round((double) globalAttributes.get(CREATION_TIME_ATTRIBUTE));
+        return ((Number)globalAttributes.get(CREATION_TIME_ATTRIBUTE)).longValue();
     }
 
     @Override
     public long getLastAccessedTime() {
-        return round((double) globalAttributes.get(LAST_ACCESSED_TIME_ATTRIBUTE));
+        return ((Number)globalAttributes.get(LAST_ACCESSED_TIME_ATTRIBUTE)).longValue();
     }
 
     public void setLastAccessedTime(long lastAccessedTime) {
