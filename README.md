@@ -86,8 +86,9 @@ To access application namespace just pass an attribute name:
 ...
 @RequestMapping("uri")
 public void doSomething(HttpSession session) {
-    session.setAttribute("name", "value");
-    session.getAttribute("name");
+    String attributeName = "name";
+    session.setAttribute(attributeName, "value");
+    session.getAttribute(attributeName);
     ...
 }
 ```
