@@ -29,7 +29,7 @@ public class PersistentConfiguration extends AbstractCouchbaseConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public CouchbaseDao couchbaseDao(CouchbaseTemplate couchbase) {
-        return new CouchbaseDao(couchbase);
+        return new CouchbaseDao(sessionCouchbase, couchbase);
     }
 
     @Bean
