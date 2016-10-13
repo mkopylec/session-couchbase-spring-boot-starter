@@ -19,22 +19,22 @@ public class TestApplication {
         run(TestApplication.class, args);
     }
 
-    @Bean
-    public EmbeddedServletContainerCustomizer customizer() {
-        return new EmbeddedServletContainerCustomizer() {
-
-            @Override
-            public void customize(ConfigurableEmbeddedServletContainer container) {
-                TomcatEmbeddedServletContainerFactory tomcat = (TomcatEmbeddedServletContainerFactory) container;
-                TomcatContextCustomizer contextCustomizer = new TomcatContextCustomizer() {
-
-                    @Override
-                    public void customize(Context context) {
-                        context.setCookieProcessor(new LegacyCookieProcessor());
-                    }
-                };
-                tomcat.addContextCustomizers(contextCustomizer);
-            }
-        };
-    }
+//    @Bean
+//    public EmbeddedServletContainerCustomizer customizer() {
+//        return new EmbeddedServletContainerCustomizer() {
+//
+//            @Override
+//            public void customize(ConfigurableEmbeddedServletContainer container) {
+//                TomcatEmbeddedServletContainerFactory tomcat = (TomcatEmbeddedServletContainerFactory) container;
+//                TomcatContextCustomizer contextCustomizer = new TomcatContextCustomizer() {
+//
+//                    @Override
+//                    public void customize(Context context) {
+//                        context.setCookieProcessor(new LegacyCookieProcessor());
+//                    }
+//                };
+//                tomcat.addContextCustomizers(contextCustomizer);
+//            }
+//        };
+//    }
 }
