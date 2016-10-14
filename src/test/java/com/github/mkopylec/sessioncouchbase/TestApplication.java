@@ -1,17 +1,9 @@
 package com.github.mkopylec.sessioncouchbase;
 
-import org.apache.catalina.Context;
-import org.apache.tomcat.util.http.LegacyCookieProcessor;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
-import org.springframework.boot.context.embedded.tomcat.TomcatContextCustomizer;
-import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
-import org.springframework.context.annotation.Bean;
 
 import static org.springframework.boot.SpringApplication.run;
 
-@EnableCouchbaseHttpSession
 @SpringBootApplication
 public class TestApplication {
 

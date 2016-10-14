@@ -13,7 +13,7 @@ import org.springframework.session.SessionRepository;
 @Configuration("sessionInMemoryConfiguration")
 @EnableConfigurationProperties(SessionCouchbaseProperties.class)
 @ConditionalOnProperty(name = "session-couchbase.in-memory.enabled")
-public class InMemoryConfiguration {
+public class InMemoryAutoConfiguration {
 
     @Autowired
     private SessionCouchbaseProperties sessionCouchbase;

@@ -21,7 +21,7 @@ import java.util.List;
 @EnableCouchbaseRepositories
 @EnableConfigurationProperties(SessionCouchbaseProperties.class)
 @ConditionalOnProperty(name = "session-couchbase.in-memory.enabled", havingValue = "false", matchIfMissing = true)
-public class PersistentConfiguration extends AbstractCouchbaseConfiguration {
+public class PersistentAutoConfiguration extends AbstractCouchbaseConfiguration {
 
     @Autowired
     private SessionCouchbaseProperties sessionCouchbase;
