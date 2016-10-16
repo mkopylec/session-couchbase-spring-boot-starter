@@ -16,7 +16,7 @@ import org.springframework.session.SessionRepository;
 public class InMemoryAutoConfiguration {
 
     @Autowired
-    private SessionCouchbaseProperties sessionCouchbase;
+    protected SessionCouchbaseProperties sessionCouchbase;
 
     @Bean
     @ConditionalOnMissingBean

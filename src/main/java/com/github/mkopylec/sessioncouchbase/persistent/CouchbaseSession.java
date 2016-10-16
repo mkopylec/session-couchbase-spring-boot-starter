@@ -32,7 +32,11 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     private static final Logger log = getLogger(CouchbaseSession.class);
 
     protected String id = randomUUID().toString();
+    protected Set<String> globalAttributesToUpdate = new HashSet<>();
+    protected Set<String> globalAttributesToRemove = new HashSet<>();
     protected Map<String, Object> globalAttributes = new HashMap<>();
+    protected Set<String> namespaceAttributesToUpdate = new HashSet<>();
+    protected Set<String> namespaceAttributesToRemove = new HashSet<>();
     protected Map<String, Object> namespaceAttributes = new HashMap<>();
     protected boolean namespacePersistenceRequired = false;
     protected boolean principalSession = false;
@@ -69,11 +73,13 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
 
     public void setLastAccessedTime(long lastAccessedTime) {
         globalAttributes.put(LAST_ACCESSED_TIME_ATTRIBUTE, lastAccessedTime);
+        globalAttributesToUpdate.add(LAST_ACCESSED_TIME_ATTRIBUTE);
     }
 
     @Override
     public void setMaxInactiveIntervalInSeconds(int interval) {
         globalAttributes.put(MAX_INACTIVE_INTERVAL_ATTRIBUTE, interval);
+        globalAttributesToUpdate.add(MAX_INACTIVE_INTERVAL_ATTRIBUTE);
     }
 
     @Override
@@ -126,6 +132,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
                 principalSession = true;
             }
             globalAttributes.put(name, attributeValue);
+            globalAttributesToUpdate.add(name);
             log.trace("Set global HTTP session attribute: [name='{}', value={}]", name, attributeValue);
         } else {
             if (PRINCIPAL_NAME_INDEX_NAME.equals(attributeName)) {
@@ -133,6 +140,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
             }
             namespacePersistenceRequired = true;
             namespaceAttributes.put(attributeName, attributeValue);
+            namespaceAttributesToUpdate.add(attributeName);
             log.trace("Set application namespace HTTP session attribute: [name='{}', value={}]", attributeName, attributeValue);
         }
     }
@@ -143,16 +151,34 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
         if (isGlobal(attributeName)) {
             String name = getNameFromGlobalName(attributeName);
             globalAttributes.remove(name);
+            globalAttributesToRemove.add(name);
             log.trace("Removed global HTTP session attribute: [name='{}']", name);
         } else {
             namespacePersistenceRequired = true;
             namespaceAttributes.remove(attributeName);
+            namespaceAttributesToRemove.add(attributeName);
             log.trace("Removed application namespace HTTP session attribute: [name='{}']", attributeName);
         }
     }
 
+    public Set<String> getGlobalAttributesToUpdate() {
+        return globalAttributesToUpdate;
+    }
+
+    public Set<String> getGlobalAttributesToRemove() {
+        return globalAttributesToRemove;
+    }
+
     public Map<String, Object> getGlobalAttributes() {
         return globalAttributes;
+    }
+
+    public Set<String> getNamespaceAttributesToUpdate() {
+        return namespaceAttributesToUpdate;
+    }
+
+    public Set<String> getNamespaceAttributesToRemove() {
+        return namespaceAttributesToRemove;
     }
 
     public Map<String, Object> getNamespaceAttributes() {
@@ -177,6 +203,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
 
     protected void setCreationTime(long creationTime) {
         globalAttributes.put(CREATION_TIME_ATTRIBUTE, creationTime);
+        globalAttributesToUpdate.add(CREATION_TIME_ATTRIBUTE);
     }
 
     protected void checkAttributeName(String attributeName) {

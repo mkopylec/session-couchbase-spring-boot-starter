@@ -168,7 +168,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
         log.debug("Deleted HTTP session with ID {}", session.getId());
     }
 
-    private boolean isOperationOnPrincipalSessionsRequired(CouchbaseSession session) {
+    protected boolean isOperationOnPrincipalSessionsRequired(CouchbaseSession session) {
         return principalSessionsEnabled && session.isPrincipalSession();
     }
 }

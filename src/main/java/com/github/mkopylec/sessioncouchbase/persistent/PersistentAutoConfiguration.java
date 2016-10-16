@@ -24,7 +24,7 @@ import java.util.List;
 public class PersistentAutoConfiguration extends AbstractCouchbaseConfiguration {
 
     @Autowired
-    private SessionCouchbaseProperties sessionCouchbase;
+    protected SessionCouchbaseProperties sessionCouchbase;
 
     @Bean
     @ConditionalOnMissingBean

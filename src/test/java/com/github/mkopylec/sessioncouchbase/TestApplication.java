@@ -1,7 +1,9 @@
 package com.github.mkopylec.sessioncouchbase;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import foodev.jsondiff.Jackson2Diff;
 import foodev.jsondiff.JsonDiff;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -56,7 +58,10 @@ public class TestApplication {
         t2.setS("20");
         t2.setD(new Date());
         JsonDiff jsonDiff = new Jackson2Diff();
+        JsonNode node1 = objectMapper.valueToTree(t);
+        JsonNode node2 = objectMapper.valueToTree(t2);
         String diff = jsonDiff.diff(objectMapper.writeValueAsString(t), objectMapper.writeValueAsString(t2));
+        ObjectNode diff2 = (ObjectNode) jsonDiff.diff(node1, node2);
 
         run(TestApplication.class, args);
     }
