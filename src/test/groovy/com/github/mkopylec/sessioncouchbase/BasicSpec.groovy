@@ -4,6 +4,7 @@ import com.couchbase.client.java.query.N1qlQueryResult
 import com.github.mkopylec.sessioncouchbase.utils.ApplicationInstance
 import com.github.mkopylec.sessioncouchbase.utils.ApplicationInstanceRunner
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties
 import org.springframework.boot.context.embedded.EmbeddedWebApplicationContext
 import org.springframework.boot.test.SpringApplicationContextLoader
 import org.springframework.boot.test.WebIntegrationTest
@@ -32,11 +33,13 @@ abstract class BasicSpec extends Specification {
     @Shared
     private RestTemplate rest = new RestTemplate()
     @Autowired(required = false)
-    private CouchbaseTemplate couchbase
+    private CouchbaseTemplate template
     @Autowired
     private EmbeddedWebApplicationContext context
     private int extraInstancePort
     private ApplicationInstance instance
+    @Autowired
+    private CouchbaseProperties couchbase
     @Autowired
     private SessionCouchbaseProperties sessionCouchbase
     // Cannot store cookie in thread local because some tests starts more than one app instance. CANNOT run tests in parallel.
@@ -72,7 +75,7 @@ abstract class BasicSpec extends Specification {
     }
 
     protected boolean currentSessionExists() {
-        return couchbase.exists(getCurrentSessionId())
+        return template.exists(getCurrentSessionId())
     }
 
     protected int getSessionTimeout() {
@@ -97,6 +100,10 @@ abstract class BasicSpec extends Specification {
 
     protected void deleteGlobalSessionAttribute() {
         delete('session/attribute/global', getPort())
+    }
+
+    protected void setAndRemoveSessionAttribute() {
+        put('session/attribute', getPort())
     }
 
     protected ResponseEntity<Message> getSessionAttribute() {
@@ -148,18 +155,18 @@ abstract class BasicSpec extends Specification {
     }
 
     protected void clearBucket() {
-        if (couchbase) {
-            def result = couchbase.queryN1QL(simple("DELETE FROM $sessionCouchbase.persistent.couchbase.bucketName"))
+        if (template) {
+            def result = template.queryN1QL(simple("DELETE FROM $couchbase.bucket.name"))
             failOnErrors(result)
         }
     }
 
     private void createBucketIndex() {
-        if (!bucketIndexCreated && couchbase) {
-            def result = couchbase.queryN1QL(simple('SELECT * FROM system:indexes'))
+        if (!bucketIndexCreated && template) {
+            def result = template.queryN1QL(simple('SELECT * FROM system:indexes'))
             failOnErrors(result)
             if (result.allRows().empty) {
-                result = couchbase.queryN1QL(simple("CREATE PRIMARY INDEX ON $sessionCouchbase.persistent.couchbase.bucketName USING GSI"))
+                result = template.queryN1QL(simple("CREATE PRIMARY INDEX ON $couchbase.bucket.name USING GSI"))
                 failOnErrors(result)
             }
             bucketIndexCreated = true
@@ -226,9 +233,17 @@ abstract class BasicSpec extends Specification {
     }
 
     private void saveSessionCookie(ResponseEntity response) {
-        def cookie = response.headers.get('Set-Cookie')
+        def cookiesHeader = response.headers.get('Set-Cookie')
+        if (cookiesHeader == null) {
+            return
+        }
+        def cookieHeader = cookiesHeader.find { it -> it.contains('SESSION') }
+        if (cookieHeader == null) {
+            return
+        }
+        def cookie = parse(cookieHeader)[0]
         if (cookie != null) {
-            currentSessionCookie = cookie
+            currentSessionCookie = cookie.toString()
         }
     }
 }

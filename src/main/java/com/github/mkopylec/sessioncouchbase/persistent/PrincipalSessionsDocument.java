@@ -4,8 +4,9 @@ import com.couchbase.client.java.repository.annotation.Field;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.couchbase.core.mapping.Document;
 
-import java.util.Collections;
 import java.util.List;
+
+import static java.util.Collections.emptyList;
 
 @Document
 public class PrincipalSessionsDocument {
@@ -25,6 +26,6 @@ public class PrincipalSessionsDocument {
     }
 
     public List<String> getSessionIds() {
-        return sessionIds == null ? Collections.<String>emptyList() : sessionIds;
+        return sessionIds == null ? emptyList() : sessionIds;
     }
 }

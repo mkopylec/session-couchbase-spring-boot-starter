@@ -6,7 +6,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import static com.github.mkopylec.sessioncouchbase.persistent.CouchbaseSession.globalAttributeName;
 import static com.github.mkopylec.sessioncouchbase.persistent.CouchbaseSessionRepository.GLOBAL_NAMESPACE;
@@ -53,20 +52,16 @@ public class RequestWrapper extends HttpServletRequestWrapper {
     protected void copyGlobalAttributes(SessionDocument oldDocument, HttpSession newSession) {
         Map<String, Object> attributes = oldDocument.getData().get(GLOBAL_NAMESPACE);
         if (attributes != null) {
-            Map<String, Object> deserializedAttributes = serializer.deserializeSessionAttributes(attributes);
-            for (Entry<String, Object> attribute : deserializedAttributes.entrySet()) {
-                newSession.setAttribute(globalAttributeName(attribute.getKey()), attribute.getValue());
-            }
+            serializer.deserializeSessionAttributes(attributes)
+                    .forEach((name, value) -> newSession.setAttribute(globalAttributeName(name), value));
         }
     }
 
     protected void copyNamespaceAttributes(SessionDocument oldDocument, HttpSession newSession) {
         Map<String, Object> attributes = oldDocument.getData().get(namespace);
         if (attributes != null) {
-            Map<String, Object> deserializedAttributes = serializer.deserializeSessionAttributes(attributes);
-            for (Entry<String, Object> attribute : deserializedAttributes.entrySet()) {
-                newSession.setAttribute(attribute.getKey(), attribute.getValue());
-            }
+            serializer.deserializeSessionAttributes(attributes)
+                    .forEach(newSession::setAttribute);
         }
     }
 }

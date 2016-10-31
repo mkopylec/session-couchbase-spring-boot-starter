@@ -21,10 +21,9 @@ dependencies {
 ```
 
 ## How to use
-Enable Couchbase backed HTTP session using `@EnableCouchbaseHttpSession`:
+Create a Spring Boot web application:
 
 ```java
-@EnableCouchbaseHttpSession
 @SpringBootApplication
 public class Application {
 
@@ -40,7 +39,7 @@ Simply use `HttpSession` interface to control HTTP session. For example:
 @Controller
 public class SessionController {
 
-    @RequestMapping("uri")
+    @GetMapping("uri")
     public void doSomething(HttpSession session) {
         ...
     }
@@ -50,27 +49,20 @@ public class SessionController {
 The starter can be used in 2 different modes:
 
 ### Couchbase backed persistence usage
-Configure Couchbase connection in _application.yml_ file:
+Configure Couchbase connection in _application.yml_ file using Session Couchbase and Spring Data Couchbase properties:
 
 ```yaml
 session-couchbase.persistent:
     namespace: <application_namespace>
-    couchbase:
-        hosts: <list_of_couchbase_cluster_hosts>
-        bucket-name: <couchbase_bucket_name>
-        password: <couchbase_bucket_password>
+
+spring.couchbase:
+  bootstrap-hosts: <list_of_couchbase_cluster_hosts>
+  bucket:
+    name: <couchbase_bucket_name>
+    password: <couchbase_bucket_password>
 ```
 
-Optionally you can override default Couchbase client settings by creating `CouchbaseEnvironment` bean:
-
-```java
-...
-@Primary
-@Bean(destroyMethod = "shutdown", name = "couchbaseEnv")
-public CouchbaseEnvironment couchbaseEnvironment() {
-    ...
-}
-```
+For full list of supported Spring Data Couchbase properties see [here](http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html).
 
 ##### Additional info
 Using Couchbase backed HTTP session you can share session among multiple web applications.
@@ -130,10 +122,6 @@ session-couchbase:
     timeout-in-seconds: 1800 # HTTP session timeout.
     persistent:
         namespace: # HTTP session application namespace under which session data must be stored.
-        couchbase:
-            hosts: localhost # Couchbase cluster hosts.
-            bucket-name: default # Couchbase bucket name where session data must be stored.
-            password: # Couchbase bucket password.
         principal-sessions:
             enabled: false # Flag for enabling and disabling finding HTTP sessions by principal. Can significantly decrease application performance when enabled.
     in-memory:

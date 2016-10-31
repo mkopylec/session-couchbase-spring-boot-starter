@@ -2,7 +2,6 @@ package com.github.mkopylec.sessioncouchbase.persistent;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import static org.apache.commons.lang3.StringUtils.removeStart;
 import static org.apache.commons.lang3.StringUtils.startsWith;
@@ -21,14 +20,14 @@ public class Serializer {
             return null;
         }
         Map<String, Object> serialized = new HashMap<>(attributes.size());
-        for (Entry<String, Object> attribute : attributes.entrySet()) {
-            if (isDeserializedObject(attribute.getValue())) {
-                Object attributeValue = encodeToString(serialize(attribute.getValue()));
-                serialized.put(attribute.getKey(), SERIALIZED_OBJECT_PREFIX + attributeValue);
+        attributes.forEach((name, value) -> {
+            if (isDeserializedObject(value)) {
+                Object attributeValue = encodeToString(serialize(value));
+                serialized.put(name, SERIALIZED_OBJECT_PREFIX + attributeValue);
             } else {
-                serialized.put(attribute.getKey(), attribute.getValue());
+                serialized.put(name, value);
             }
-        }
+        });
         return serialized;
     }
 
@@ -37,14 +36,14 @@ public class Serializer {
             return null;
         }
         Map<String, Object> deserialized = new HashMap<>(attributes.size());
-        for (Entry<String, Object> attribute : attributes.entrySet()) {
-            Object attributeValue = attribute.getValue();
-            if (isSerializedObject(attribute.getValue())) {
-                String content = removeStart(attribute.getValue().toString(), SERIALIZED_OBJECT_PREFIX);
+        attributes.forEach((name, value) -> {
+            Object attributeValue = value;
+            if (isSerializedObject(value)) {
+                String content = removeStart(value.toString(), SERIALIZED_OBJECT_PREFIX);
                 attributeValue = deserialize(decodeFromString(content));
             }
-            deserialized.put(attribute.getKey(), attributeValue);
-        }
+            deserialized.put(name, attributeValue);
+        });
         return deserialized;
     }
 

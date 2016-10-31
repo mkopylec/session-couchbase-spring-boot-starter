@@ -1,5 +1,7 @@
 package com.github.mkopylec.sessioncouchbase.persistent;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.springframework.session.ExpiringSession;
 
@@ -13,6 +15,7 @@ import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.removeStart;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -32,13 +35,12 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     private static final Logger log = getLogger(CouchbaseSession.class);
 
     protected String id = randomUUID().toString();
-    protected Set<String> globalAttributesToUpdate = new HashSet<>();
+    protected Map<String, Object> globalAttributesToUpdate = new HashMap<>();
     protected Set<String> globalAttributesToRemove = new HashSet<>();
     protected Map<String, Object> globalAttributes = new HashMap<>();
-    protected Set<String> namespaceAttributesToUpdate = new HashSet<>();
+    protected Map<String, Object> namespaceAttributesToUpdate = new HashMap<>();
     protected Set<String> namespaceAttributesToRemove = new HashSet<>();
     protected Map<String, Object> namespaceAttributes = new HashMap<>();
-    protected boolean namespacePersistenceRequired = false;
     protected boolean principalSession = false;
 
     public CouchbaseSession(int timeoutInSeconds) {
@@ -50,8 +52,8 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
 
     public CouchbaseSession(String id, Map<String, Object> globalAttributes, Map<String, Object> namespaceAttributes) {
         this.id = id;
-        this.globalAttributes = globalAttributes == null ? new HashMap<String, Object>() : globalAttributes;
-        this.namespaceAttributes = namespaceAttributes == null ? new HashMap<String, Object>() : namespaceAttributes;
+        this.globalAttributes = globalAttributes == null ? new HashMap<>() : globalAttributes;
+        this.namespaceAttributes = namespaceAttributes == null ? new HashMap<>() : namespaceAttributes;
         if (containsPrincipalAttribute()) {
             principalSession = true;
         }
@@ -73,13 +75,13 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
 
     public void setLastAccessedTime(long lastAccessedTime) {
         globalAttributes.put(LAST_ACCESSED_TIME_ATTRIBUTE, lastAccessedTime);
-        globalAttributesToUpdate.add(LAST_ACCESSED_TIME_ATTRIBUTE);
+        globalAttributesToUpdate.put(LAST_ACCESSED_TIME_ATTRIBUTE, lastAccessedTime);
     }
 
     @Override
     public void setMaxInactiveIntervalInSeconds(int interval) {
         globalAttributes.put(MAX_INACTIVE_INTERVAL_ATTRIBUTE, interval);
-        globalAttributesToUpdate.add(MAX_INACTIVE_INTERVAL_ATTRIBUTE);
+        globalAttributesToUpdate.put(MAX_INACTIVE_INTERVAL_ATTRIBUTE, interval);
     }
 
     @Override
@@ -115,10 +117,9 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
 
     @Override
     public Set<String> getAttributeNames() {
-        Set<String> attributesNames = new HashSet<>();
-        for (String attributeName : globalAttributes.keySet()) {
-            attributesNames.add(globalAttributeName(attributeName));
-        }
+        Set<String> attributesNames = globalAttributes.keySet().stream()
+                .map(CouchbaseSession::globalAttributeName)
+                .collect(toSet());
         attributesNames.addAll(namespaceAttributes.keySet());
         return unmodifiableSet(attributesNames);
     }
@@ -132,15 +133,14 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
                 principalSession = true;
             }
             globalAttributes.put(name, attributeValue);
-            globalAttributesToUpdate.add(name);
+            globalAttributesToUpdate.put(name, attributeValue);
             log.trace("Set global HTTP session attribute: [name='{}', value={}]", name, attributeValue);
         } else {
             if (PRINCIPAL_NAME_INDEX_NAME.equals(attributeName)) {
                 principalSession = true;
             }
-            namespacePersistenceRequired = true;
             namespaceAttributes.put(attributeName, attributeValue);
-            namespaceAttributesToUpdate.add(attributeName);
+            namespaceAttributesToUpdate.put(attributeName, attributeValue);
             log.trace("Set application namespace HTTP session attribute: [name='{}', value={}]", attributeName, attributeValue);
         }
     }
@@ -154,14 +154,13 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
             globalAttributesToRemove.add(name);
             log.trace("Removed global HTTP session attribute: [name='{}']", name);
         } else {
-            namespacePersistenceRequired = true;
             namespaceAttributes.remove(attributeName);
             namespaceAttributesToRemove.add(attributeName);
             log.trace("Removed application namespace HTTP session attribute: [name='{}']", attributeName);
         }
     }
 
-    public Set<String> getGlobalAttributesToUpdate() {
+    public Map<String, Object> getGlobalAttributesToUpdate() {
         return globalAttributesToUpdate;
     }
 
@@ -173,7 +172,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
         return globalAttributes;
     }
 
-    public Set<String> getNamespaceAttributesToUpdate() {
+    public Map<String, Object> getNamespaceAttributesToUpdate() {
         return namespaceAttributesToUpdate;
     }
 
@@ -186,7 +185,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     }
 
     public boolean isNamespacePersistenceRequired() {
-        return namespacePersistenceRequired;
+        return MapUtils.isNotEmpty(namespaceAttributesToUpdate) || CollectionUtils.isNotEmpty(namespaceAttributesToRemove);
     }
 
     public boolean isPrincipalSession() {
@@ -203,7 +202,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
 
     protected void setCreationTime(long creationTime) {
         globalAttributes.put(CREATION_TIME_ATTRIBUTE, creationTime);
-        globalAttributesToUpdate.add(CREATION_TIME_ATTRIBUTE);
+        globalAttributesToUpdate.put(CREATION_TIME_ATTRIBUTE, creationTime);
     }
 
     protected void checkAttributeName(String attributeName) {

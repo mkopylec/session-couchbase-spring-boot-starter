@@ -5,31 +5,33 @@ import com.github.mkopylec.sessioncouchbase.SessionCouchbaseProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.couchbase.config.AbstractCouchbaseConfiguration;
 import org.springframework.data.couchbase.core.CouchbaseTemplate;
 import org.springframework.data.couchbase.repository.config.EnableCouchbaseRepositories;
 import org.springframework.session.SessionRepository;
+import org.springframework.session.config.annotation.web.http.EnableSpringHttpSession;
 import org.springframework.session.web.http.CookieHttpSessionStrategy;
 import org.springframework.session.web.http.MultiHttpSessionStrategy;
 
-import java.util.List;
-
 @Configuration("sessionPersistentConfiguration")
 @EnableCouchbaseRepositories
-@EnableConfigurationProperties(SessionCouchbaseProperties.class)
+@EnableSpringHttpSession
+@EnableConfigurationProperties({SessionCouchbaseProperties.class, CouchbaseProperties.class})
 @ConditionalOnProperty(name = "session-couchbase.in-memory.enabled", havingValue = "false", matchIfMissing = true)
-public class PersistentAutoConfiguration extends AbstractCouchbaseConfiguration {
+public class PersistentAutoConfiguration {
 
+    @Autowired
+    protected CouchbaseProperties couchbase;
     @Autowired
     protected SessionCouchbaseProperties sessionCouchbase;
 
     @Bean
     @ConditionalOnMissingBean
-    public CouchbaseDao couchbaseDao(CouchbaseTemplate couchbase) {
-        return new CouchbaseDao(sessionCouchbase, couchbase);
+    public CouchbaseDao couchbaseDao(CouchbaseTemplate template) {
+        return new CouchbaseDao(couchbase, template);
     }
 
     @Bean
@@ -56,20 +58,5 @@ public class PersistentAutoConfiguration extends AbstractCouchbaseConfiguration 
     @ConditionalOnMissingBean
     public ObjectMapper objectMapper() {
         return new ObjectMapper();
-    }
-
-    @Override
-    protected List<String> getBootstrapHosts() {
-        return sessionCouchbase.getPersistent().getCouchbase().getHosts();
-    }
-
-    @Override
-    protected String getBucketName() {
-        return sessionCouchbase.getPersistent().getCouchbase().getBucketName();
-    }
-
-    @Override
-    protected String getBucketPassword() {
-        return sessionCouchbase.getPersistent().getCouchbase().getPassword();
     }
 }

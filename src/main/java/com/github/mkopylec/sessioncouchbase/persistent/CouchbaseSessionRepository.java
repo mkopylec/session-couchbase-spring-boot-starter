@@ -7,7 +7,6 @@ import org.springframework.session.FindByIndexNameSessionRepository;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.couchbase.client.java.document.json.JsonObject.from;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
@@ -68,12 +67,12 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
 
     @Override
     public void save(CouchbaseSession session) {
-        Map<String, Object> serializedGlobal = serializer.serializeSessionAttributes(session.getGlobalAttributes());
-        dao.updateSession(from(serializedGlobal), GLOBAL_NAMESPACE, session.getId());
+        Map<String, Object> serializedGlobal = serializer.serializeSessionAttributes(session.getGlobalAttributesToUpdate());
+        dao.updateSession(serializedGlobal, session.getGlobalAttributesToRemove(), GLOBAL_NAMESPACE, session.getId());
 
         if (session.isNamespacePersistenceRequired()) {
-            Map<String, Object> serializedNamespace = serializer.serializeSessionAttributes(session.getNamespaceAttributes());
-            dao.updateSession(from(serializedNamespace), namespace, session.getId());
+            Map<String, Object> serializedNamespace = serializer.serializeSessionAttributes(session.getNamespaceAttributesToUpdate());
+            dao.updateSession(serializedNamespace, session.getNamespaceAttributesToRemove(), namespace, session.getId());
         }
 
         if (isOperationOnPrincipalSessionsRequired(session)) {
@@ -94,6 +93,10 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
         }
 
         notNull(globalAttributes, "Invalid state of HTTP session persisted in couchbase. Missing global attributes.");
+
+        if (namespaceAttributes == null) {
+            dao.insertNamespace(namespace, id);
+        }
 
         Map<String, Object> deserializedGlobal = serializer.deserializeSessionAttributes(globalAttributes);
         Map<String, Object> deserializedNamespace = serializer.deserializeSessionAttributes(namespaceAttributes);
