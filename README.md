@@ -9,6 +9,11 @@ The project is based on:
 
 The project supports only Couchbase 4 and higher versions. For more information about Couchbase click [here](http://www.couchbase.com/).
 
+## Migrating from 1.x.x to 2.x.x
+
+- remove `@EnableCouchbaseHttpSession` annotation
+- replace `session-couchbase.persistent.couchbase` properties with `spring.couchbase` in the _application.yml_ file
+
 ## Installing
 
 ```gradle
@@ -16,7 +21,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    compile 'com.github.mkopylec:session-couchbase-spring-boot-starter:1.2.2'
+    compile 'com.github.mkopylec:session-couchbase-spring-boot-starter:2.0.0'
 }
 ```
 
