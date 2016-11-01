@@ -72,6 +72,7 @@ For full list of supported Spring Data Couchbase properties see [here](http://do
 Using Couchbase backed HTTP session you can share session among multiple web applications.
 The session will not be destroyed when the web applications will be shut down.
 
+#### Namespaces
 You can access session attributes in 2 ways:
  - _application namespace_ - attributes are visible only to instances of the same web application within a distributed system
  - _global namespace_ - attributes are visible to all instances of all web applications within a distributed system
@@ -104,6 +105,7 @@ public void doSomething(HttpSession session) {
 
 When changing HTTP session ID every attribute is copied to the new session, no matter what namespace it belongs.
 
+#### Retrying
 By default there is only one attempt to query Couchbase.
 It is possible to retry the query operation when an error occurs.
 The number of retries can be controlled in _application.yml_ file:
