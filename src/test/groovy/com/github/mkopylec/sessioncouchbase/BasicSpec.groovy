@@ -12,6 +12,7 @@ import org.springframework.data.couchbase.core.CouchbaseTemplate
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.web.client.RestTemplate
 import spock.lang.Shared
@@ -32,6 +33,8 @@ abstract class BasicSpec extends Specification {
 
     @Shared
     private RestTemplate rest = new RestTemplate()
+    @Shared
+    private ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor()
     @Autowired(required = false)
     private CouchbaseTemplate template
     @Autowired
@@ -46,6 +49,9 @@ abstract class BasicSpec extends Specification {
     private String currentSessionCookie
 
     void setup() {
+        executor.queueCapacity = 1
+        executor.corePoolSize = 200
+        executor.initialize()
         createBucketIndex()
         clearBucket()
     }
@@ -82,8 +88,27 @@ abstract class BasicSpec extends Specification {
         return sessionCouchbase.timeoutInSeconds * 1000
     }
 
+    protected void executeConcurrently(Closure operation) {
+        def futures = []
+        for (int i = 0; i < 100; i++) {
+            def future = executor.submit(new Runnable() {
+
+                @Override
+                void run() {
+                    operation()
+                }
+            })
+            futures.add(future)
+        }
+        futures.each { it -> it.get() }
+    }
+
     protected void setSessionAttribute(Message attribute) {
         post('session/attribute', attribute, getPort())
+    }
+
+    protected void setSecondSessionAttribute(Message attribute) {
+        post('session/attribute/second', attribute, getPort())
     }
 
     protected void setGlobalSessionAttribute(Message attribute) {
@@ -102,12 +127,16 @@ abstract class BasicSpec extends Specification {
         delete('session/attribute/global', getPort())
     }
 
-    protected void setAndRemoveSessionAttribute() {
-        put('session/attribute', getPort())
+    protected void setAndRemoveSessionAttribute(Message attribute) {
+        put('session/attribute', getPort(), attribute)
     }
 
     protected ResponseEntity<Message> getSessionAttribute() {
         return get('session/attribute', Message, getPort())
+    }
+
+    protected ResponseEntity<Message> getSecondSessionAttribute() {
+        return get('session/attribute/second', Message, getPort())
     }
 
     protected ResponseEntity<Message> getSessionAttributeFromExtraInstance() {
@@ -209,13 +238,12 @@ abstract class BasicSpec extends Specification {
         saveSessionCookie(response)
     }
 
-    private ResponseEntity<Object> put(String path, int port = getPort()) {
+    private void put(String path, int port = getPort(), Object body = null) {
         def url = createUrl(path, port)
         HttpHeaders headers = addSessionCookie()
-        def request = new HttpEntity<>(headers)
+        def request = new HttpEntity<>(body, headers)
         def response = rest.exchange(url, PUT, request, Object)
         saveSessionCookie(response)
-        return response
     }
 
     private static GString createUrl(String path, int port) {

@@ -4,6 +4,8 @@ session-couchbase:
     namespace: test-application
     principal-sessions:
       enabled: false
+    retry:
+      max-attempts: 10
   in-memory:
     enabled: false
 

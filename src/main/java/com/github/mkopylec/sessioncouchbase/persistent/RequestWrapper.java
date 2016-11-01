@@ -1,5 +1,7 @@
 package com.github.mkopylec.sessioncouchbase.persistent;
 
+import com.github.mkopylec.sessioncouchbase.persistent.data.CouchbaseDao;
+import com.github.mkopylec.sessioncouchbase.persistent.data.SessionDocument;
 import org.slf4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -44,7 +46,7 @@ public class RequestWrapper extends HttpServletRequestWrapper {
         copyGlobalAttributes(oldDocument, newSession);
         copyNamespaceAttributes(oldDocument, newSession);
 
-        log.debug("HTTP session ID changed from {} to {}", oldDocument.getId(), newDocument.getId());
+        log.debug("HTTP session ID has changed from {} to {}", oldDocument.getId(), newDocument.getId());
 
         return newDocument.getId();
     }

@@ -1,4 +1,4 @@
-package com.github.mkopylec.sessioncouchbase.persistent;
+package com.github.mkopylec.sessioncouchbase.persistent.data;
 
 import com.couchbase.client.java.repository.annotation.Field;
 import org.springframework.data.annotation.Id;

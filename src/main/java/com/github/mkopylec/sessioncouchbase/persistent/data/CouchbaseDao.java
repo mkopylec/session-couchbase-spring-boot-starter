@@ -1,4 +1,4 @@
-package com.github.mkopylec.sessioncouchbase.persistent;
+package com.github.mkopylec.sessioncouchbase.persistent.data;
 
 import com.couchbase.client.java.document.json.JsonArray;
 import com.couchbase.client.java.error.DocumentDoesNotExistException;
@@ -7,8 +7,10 @@ import com.couchbase.client.java.query.N1qlQueryRow;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties;
+import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.data.couchbase.core.CouchbaseQueryExecutionException;
 import org.springframework.data.couchbase.core.CouchbaseTemplate;
+import org.springframework.retry.support.RetryTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,11 +25,13 @@ import static org.springframework.util.Assert.isTrue;
 public class CouchbaseDao {
 
     protected final CouchbaseProperties couchbase;
-    protected final CouchbaseTemplate template;
+    protected final CouchbaseTemplate couchbaseTemplate;
+    protected final RetryTemplate retryTemplate;
 
-    public CouchbaseDao(CouchbaseProperties couchbase, CouchbaseTemplate template) {
+    public CouchbaseDao(CouchbaseProperties couchbase, CouchbaseTemplate couchbaseTemplate, RetryTemplate retryTemplate) {
         this.couchbase = couchbase;
-        this.template = template;
+        this.couchbaseTemplate = couchbaseTemplate;
+        this.retryTemplate = retryTemplate;
     }
 
     public void insertNamespace(String namespace, String id) {
@@ -79,43 +83,48 @@ public class CouchbaseDao {
     }
 
     public SessionDocument findById(String id) {
-        return template.findById(id, SessionDocument.class);
+        return couchbaseTemplate.findById(id, SessionDocument.class);
     }
 
     public PrincipalSessionsDocument findByPrincipal(String principal) {
-        return template.findById(principal, PrincipalSessionsDocument.class);
+        return couchbaseTemplate.findById(principal, PrincipalSessionsDocument.class);
     }
 
     public void updateExpirationTime(String id, int expiry) {
-        template.getCouchbaseBucket().touch(id, expiry);
+        couchbaseTemplate.getCouchbaseBucket().touch(id, expiry);
     }
 
     public void save(SessionDocument document) {
-        template.save(document);
+        couchbaseTemplate.save(document);
     }
 
     public void save(PrincipalSessionsDocument document) {
-        template.save(document);
+        couchbaseTemplate.save(document);
     }
 
     public boolean exists(String documentId) {
-        return template.exists(documentId);
+        return couchbaseTemplate.exists(documentId);
     }
 
     public void delete(String id) {
         try {
-            template.remove(id);
-        } catch (DocumentDoesNotExistException ex) {
+            couchbaseTemplate.remove(id);
+        } catch (DataRetrievalFailureException ex) {
+            if (!(ex.getCause() instanceof DocumentDoesNotExistException)) {
+                throw ex;
+            }
             //Do nothing
         }
     }
 
     protected N1qlQueryResult executeQuery(String statement, JsonArray parameters) {
-        N1qlQueryResult result = template.queryN1QL(parameterized(statement, parameters));
-        if (isQueryFailed(result)) {
-            throw new CouchbaseQueryExecutionException("Error executing N1QL statement '" + statement + "'. " + result.errors());
-        }
-        return result;
+        return retryTemplate.execute(context -> {
+            N1qlQueryResult result = couchbaseTemplate.queryN1QL(parameterized(statement, parameters));
+            if (isQueryFailed(result)) {
+                throw new CouchbaseQueryExecutionException("Error executing N1QL statement '" + statement + "'. " + result.errors());
+            }
+            return result;
+        });
     }
 
     protected String getBucketName() {

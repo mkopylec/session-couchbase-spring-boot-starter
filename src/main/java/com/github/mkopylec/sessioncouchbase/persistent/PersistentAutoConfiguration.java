@@ -2,7 +2,10 @@ package com.github.mkopylec.sessioncouchbase.persistent;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mkopylec.sessioncouchbase.SessionCouchbaseProperties;
+import com.github.mkopylec.sessioncouchbase.persistent.data.CouchbaseDao;
+import com.github.mkopylec.sessioncouchbase.persistent.data.RetryLoggingListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties;
@@ -11,12 +14,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.couchbase.core.CouchbaseTemplate;
 import org.springframework.data.couchbase.repository.config.EnableCouchbaseRepositories;
+import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.config.annotation.web.http.EnableSpringHttpSession;
 import org.springframework.session.web.http.CookieHttpSessionStrategy;
 import org.springframework.session.web.http.MultiHttpSessionStrategy;
 
-@Configuration("sessionPersistentConfiguration")
+import java.util.HashMap;
+import java.util.Map;
+
+@Configuration
 @EnableCouchbaseRepositories
 @EnableSpringHttpSession
 @EnableConfigurationProperties({SessionCouchbaseProperties.class, CouchbaseProperties.class})
@@ -30,8 +38,26 @@ public class PersistentAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public CouchbaseDao couchbaseDao(CouchbaseTemplate template) {
-        return new CouchbaseDao(couchbase, template);
+    public RetryLoggingListener retryLoggingListener() {
+        return new RetryLoggingListener();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public RetryTemplate sessionCouchbaseRetryTemplate(RetryLoggingListener listener) {
+        Map<Class<? extends Throwable>, Boolean> retryableExceptions = new HashMap<>(1);
+        retryableExceptions.put(Exception.class, true);
+        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(sessionCouchbase.getPersistent().getRetry().getMaxAttempts(), retryableExceptions);
+        RetryTemplate retryTemplate = new RetryTemplate();
+        retryTemplate.setRetryPolicy(retryPolicy);
+        retryTemplate.registerListener(listener);
+        return retryTemplate;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public CouchbaseDao couchbaseDao(CouchbaseTemplate couchbaseTemplate, @Qualifier("sessionCouchbaseRetryTemplate") RetryTemplate retryTemplate) {
+        return new CouchbaseDao(couchbase, couchbaseTemplate, retryTemplate);
     }
 
     @Bean

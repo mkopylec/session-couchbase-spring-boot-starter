@@ -11,7 +11,7 @@ import org.springframework.session.MapSessionRepository;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.config.annotation.web.http.EnableSpringHttpSession;
 
-@Configuration("sessionInMemoryConfiguration")
+@Configuration
 @EnableSpringHttpSession
 @EnableConfigurationProperties(SessionCouchbaseProperties.class)
 @ConditionalOnProperty(name = "session-couchbase.in-memory.enabled")

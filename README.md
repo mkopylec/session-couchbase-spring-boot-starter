@@ -69,7 +69,6 @@ spring.couchbase:
 
 For full list of supported Spring Data Couchbase properties see [here](http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html).
 
-##### Additional info
 Using Couchbase backed HTTP session you can share session among multiple web applications.
 The session will not be destroyed when the web applications will be shut down.
 
@@ -105,6 +104,17 @@ public void doSomething(HttpSession session) {
 
 When changing HTTP session ID every attribute is copied to the new session, no matter what namespace it belongs.
 
+By default there is only one attempt to query Couchbase.
+It is possible to retry the query operation when an error occurs.
+The number of retries can be controlled in _application.yml_ file:
+
+```yaml
+session-couchbase.persistent.retry.max-attempts: <number of attempts>
+```
+
+The concurrent modification errors: `DML Error, possible causes include CAS mismatch or concurrent modificationFailed to perform update` 
+can be avoided by increasing the number of maximum attempts.
+
 ### In-memory usage
 Enable in-memory mode in _application.yml_ file:
 
@@ -112,7 +122,6 @@ Enable in-memory mode in _application.yml_ file:
 session-couchbase.in-memory.enabled: true
 ```
 
-##### Additional info
 Using in-memory HTTP session you can not share session among multiple web applications.
 The session is visible only within a single web application instance and will be destroyed when the web application will be shut down.
 
@@ -129,6 +138,8 @@ session-couchbase:
         namespace: # HTTP session application namespace under which session data must be stored.
         principal-sessions:
             enabled: false # Flag for enabling and disabling finding HTTP sessions by principal. Can significantly decrease application performance when enabled.
+        retry:
+            max-attempts: 1 # Maximum number of attempts to repeat a query to Couchbase when error occurs.
     in-memory:
         enabled: false # Flag for enabling and disabling in-memory mode.
 ```

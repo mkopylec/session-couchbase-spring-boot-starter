@@ -107,10 +107,10 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
         if (isGlobal(attributeName)) {
             String name = getNameFromGlobalName(attributeName);
             attribute = (T) globalAttributes.get(name);
-            log.trace("Read global HTTP session attribute: [name='{}', value={}]", name, attribute);
+            log.trace("Global HTTP session attribute: [name='{}', value={}] has been read", name, attribute);
         } else {
             attribute = (T) namespaceAttributes.get(attributeName);
-            log.trace("Read application namespace HTTP session attribute: [name='{}', value={}]", attributeName, attribute);
+            log.trace("Application namespace HTTP session attribute: [name='{}', value={}] has been read", attributeName, attribute);
         }
         return attribute;
     }
@@ -134,14 +134,14 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
             }
             globalAttributes.put(name, attributeValue);
             globalAttributesToUpdate.put(name, attributeValue);
-            log.trace("Set global HTTP session attribute: [name='{}', value={}]", name, attributeValue);
+            log.trace("Global HTTP session attribute: [name='{}', value={}] has been set", name, attributeValue);
         } else {
             if (PRINCIPAL_NAME_INDEX_NAME.equals(attributeName)) {
                 principalSession = true;
             }
             namespaceAttributes.put(attributeName, attributeValue);
             namespaceAttributesToUpdate.put(attributeName, attributeValue);
-            log.trace("Set application namespace HTTP session attribute: [name='{}', value={}]", attributeName, attributeValue);
+            log.trace("Application namespace HTTP session attribute: [name='{}', value={}] has been set", attributeName, attributeValue);
         }
     }
 
@@ -152,11 +152,11 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
             String name = getNameFromGlobalName(attributeName);
             globalAttributes.remove(name);
             globalAttributesToRemove.add(name);
-            log.trace("Removed global HTTP session attribute: [name='{}']", name);
+            log.trace("Global HTTP session attribute: [name='{}'] has been removed", name);
         } else {
             namespaceAttributes.remove(attributeName);
             namespaceAttributesToRemove.add(attributeName);
-            log.trace("Removed application namespace HTTP session attribute: [name='{}']", attributeName);
+            log.trace("Application namespace HTTP session attribute: [name='{}'] has been removed", attributeName);
         }
     }
 

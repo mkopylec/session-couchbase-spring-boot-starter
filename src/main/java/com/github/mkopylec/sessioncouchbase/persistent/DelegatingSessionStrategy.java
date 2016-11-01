@@ -1,5 +1,6 @@
 package com.github.mkopylec.sessioncouchbase.persistent;
 
+import com.github.mkopylec.sessioncouchbase.persistent.data.CouchbaseDao;
 import org.springframework.session.Session;
 import org.springframework.session.web.http.CookieHttpSessionStrategy;
 import org.springframework.session.web.http.MultiHttpSessionStrategy;

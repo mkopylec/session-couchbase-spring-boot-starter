@@ -1,6 +1,9 @@
 package com.github.mkopylec.sessioncouchbase.persistent;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.mkopylec.sessioncouchbase.persistent.data.CouchbaseDao;
+import com.github.mkopylec.sessioncouchbase.persistent.data.PrincipalSessionsDocument;
+import com.github.mkopylec.sessioncouchbase.persistent.data.SessionDocument;
 import org.slf4j.Logger;
 import org.springframework.session.FindByIndexNameSessionRepository;
 
@@ -60,7 +63,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
         dao.save(sessionDocument);
         dao.updateExpirationTime(session.getId(), getSessionDocumentExpiration());
 
-        log.debug("Created HTTP session with ID {}", session.getId());
+        log.debug("HTTP session with ID {} has been created", session.getId());
 
         return session;
     }
@@ -79,7 +82,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
             savePrincipalSession(session);
         }
         dao.updateExpirationTime(session.getId(), getSessionDocumentExpiration());
-        log.debug("Saved HTTP session with ID {}", session.getId());
+        log.debug("HTTP session with ID {} has been saved", session.getId());
     }
 
     @Override
@@ -108,7 +111,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
         }
         session.setLastAccessedTime(currentTimeMillis());
 
-        log.debug("Found HTTP session with ID {}", id);
+        log.debug("HTTP session with ID {} has been found", id);
 
         return session;
     }
@@ -136,12 +139,12 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
             return emptyMap();
         }
         Map<String, CouchbaseSession> sessionsById = new HashMap<>(sessionsDocument.getSessionIds().size());
-        for (String sessionId : sessionsDocument.getSessionIds()) {
+        sessionsDocument.getSessionIds().forEach(sessionId -> {
             CouchbaseSession session = getSession(sessionId);
             sessionsById.put(sessionId, session);
-        }
+        });
 
-        log.debug("Found principals {} sessions with IDs {}", indexValue, sessionsById.keySet());
+        log.debug("Principals {} sessions with IDs {} have been found", indexValue, sessionsById.keySet());
 
         return sessionsById;
     }
@@ -158,17 +161,17 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
             PrincipalSessionsDocument sessionsDocument = new PrincipalSessionsDocument(principal, singletonList(session.getId()));
             dao.save(sessionsDocument);
         }
-        log.debug("Added principals {} session with ID {}", principal, session.getId());
+        log.debug("Principals {} session with ID {} has been added", principal, session.getId());
         dao.updateExpirationTime(principal, getSessionDocumentExpiration());
     }
 
     protected void deleteSession(CouchbaseSession session) {
         if (isOperationOnPrincipalSessionsRequired(session)) {
             dao.updateRemovePrincipalSession(session.getPrincipalAttribute(), session.getId());
-            log.debug("Removed principals {} session with ID {}", session.getPrincipalAttribute(), session.getId());
+            log.debug("Principals {} session with ID {} has been removed", session.getPrincipalAttribute(), session.getId());
         }
         dao.delete(session.getId());
-        log.debug("Deleted HTTP session with ID {}", session.getId());
+        log.debug("HTTP session with ID {} has been deleted", session.getId());
     }
 
     protected boolean isOperationOnPrincipalSessionsRequired(CouchbaseSession session) {

@@ -1,9 +1,9 @@
 package com.github.mkopylec.sessioncouchbase;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.mkopylec.sessioncouchbase.persistent.CouchbaseDao;
 import com.github.mkopylec.sessioncouchbase.persistent.CouchbaseSessionRepository;
 import com.github.mkopylec.sessioncouchbase.persistent.Serializer;
+import com.github.mkopylec.sessioncouchbase.persistent.data.CouchbaseDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;

@@ -39,6 +39,11 @@ public class SessionController {
         session.setAttribute(SESSION_ATTRIBUTE_NAME, dto);
     }
 
+    @PostMapping("attribute/second")
+    public void setSecondAttribute(@RequestBody Message dto, HttpSession session) {
+        session.setAttribute(SECOND_SESSION_ATTRIBUTE_NAME, dto);
+    }
+
     @PostMapping("attribute/global")
     public void setGlobalAttribute(@RequestBody Message dto, HttpSession session) {
         session.setAttribute(globalAttributeName(SESSION_ATTRIBUTE_NAME), dto);
@@ -47,6 +52,11 @@ public class SessionController {
     @GetMapping("attribute")
     public Object getAttribute(HttpSession session) {
         return session.getAttribute(SESSION_ATTRIBUTE_NAME);
+    }
+
+    @GetMapping("attribute/second")
+    public Object getSecondAttribute(HttpSession session) {
+        return session.getAttribute(SECOND_SESSION_ATTRIBUTE_NAME);
     }
 
     @GetMapping("attribute/global")
@@ -65,8 +75,8 @@ public class SessionController {
     }
 
     @PutMapping("attribute")
-    public void setAndRemoveAttributes(HttpSession session) {
-        session.setAttribute(SECOND_SESSION_ATTRIBUTE_NAME, "second");
+    public void setAndRemoveAttributes(@RequestBody Message dto, HttpSession session) {
+        session.setAttribute(SECOND_SESSION_ATTRIBUTE_NAME, dto);
         session.removeAttribute(SESSION_ATTRIBUTE_NAME);
     }
 

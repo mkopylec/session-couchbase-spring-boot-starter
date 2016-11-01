@@ -75,14 +75,17 @@ abstract class SessionSpec extends BasicSpec {
 
     def "Should set and remove HTTP session attributes in one HTTP request"() {
         given:
-        def message = new Message(text: 'twisted mind', number: 100)
+        def message = new Message(text: 'ouija', number: 666)
         setSessionAttribute message
+        def message2 = new Message(text: 'ouija2', number: 666)
 
         when:
-        setAndRemoveSessionAttribute()
+        setAndRemoveSessionAttribute(message2)
 
         then:
         assertThat(getSessionAttribute())
                 .hasNoBody()
+        assertThat(getSecondSessionAttribute())
+                .hasBody(message2)
     }
 }
