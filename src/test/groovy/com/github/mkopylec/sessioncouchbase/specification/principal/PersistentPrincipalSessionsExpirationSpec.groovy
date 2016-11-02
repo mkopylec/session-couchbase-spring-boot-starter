@@ -1,0 +1,4 @@
+package com.github.mkopylec.sessioncouchbase.specification.principal
+
+class PersistentPrincipalSessionsExpirationSpec extends PrincipalSessionsExpirationSpec {
+}

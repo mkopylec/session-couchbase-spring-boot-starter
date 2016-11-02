@@ -1,7 +1,7 @@
 package com.github.mkopylec.sessioncouchbase;
 
-import com.github.mkopylec.sessioncouchbase.persistent.CouchbaseSession;
-import com.github.mkopylec.sessioncouchbase.persistent.CouchbaseSessionRepository;
+import com.github.mkopylec.sessioncouchbase.core.CouchbaseSession;
+import com.github.mkopylec.sessioncouchbase.core.CouchbaseSessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.github.mkopylec.sessioncouchbase.persistent.CouchbaseSession.globalAttributeName;
+import static com.github.mkopylec.sessioncouchbase.core.CouchbaseSession.globalAttributeName;
 import static java.util.Collections.list;
 import static org.springframework.session.FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME;
 

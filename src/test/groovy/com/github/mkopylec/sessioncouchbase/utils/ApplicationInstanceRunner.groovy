@@ -13,6 +13,7 @@ class ApplicationInstanceRunner {
     private boolean shouldWait
     private String namespace
     private boolean principalSessionsEnabled
+    private int maxAttempts
     private int port
 
     void run() {
@@ -34,6 +35,10 @@ class ApplicationInstanceRunner {
 
     void setPrincipalSessionsEnabled(boolean principalSessionsEnabled) {
         this.principalSessionsEnabled = principalSessionsEnabled
+    }
+
+    void setRetryMaxAttempts(int maxAttempts) {
+        this.maxAttempts = maxAttempts
     }
 
     int getPort() {
@@ -59,7 +64,12 @@ class ApplicationInstanceRunner {
 
         @Override
         public void run() {
-            context = SpringApplication.run(TestApplication, '--server.port=0', "--session-couchbase.persistent.namespace=$namespace", "--session-couchbase.persistent.principal-sessions.enabled=$principalSessionsEnabled") as EmbeddedWebApplicationContext
+            context = SpringApplication.run(TestApplication,
+                    '--server.port=0',
+                    "--session-couchbase.application-namespace=$namespace",
+                    "--session-couchbase.principal-sessions.enabled=$principalSessionsEnabled",
+                    "--session-couchbase.retry.max-attempts=$maxAttempts"
+            ) as EmbeddedWebApplicationContext
             port = context.embeddedServletContainer.port
             synchronized (monitor) {
                 shouldWait = false

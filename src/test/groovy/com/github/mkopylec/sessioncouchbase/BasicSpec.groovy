@@ -1,6 +1,8 @@
 package com.github.mkopylec.sessioncouchbase
 
 import com.couchbase.client.java.query.N1qlQueryResult
+import com.github.mkopylec.sessioncouchbase.configuration.SessionCouchbaseProperties
+import com.github.mkopylec.sessioncouchbase.data.SessionDao
 import com.github.mkopylec.sessioncouchbase.utils.ApplicationInstance
 import com.github.mkopylec.sessioncouchbase.utils.ApplicationInstanceRunner
 import org.springframework.beans.factory.annotation.Autowired
@@ -38,6 +40,10 @@ abstract class BasicSpec extends Specification {
     @Autowired(required = false)
     private CouchbaseTemplate template
     @Autowired
+    private SessionDao sessionDao
+    @Autowired
+    private SessionEventConsumer eventConsumer
+    @Autowired
     private EmbeddedWebApplicationContext context
     private int extraInstancePort
     private ApplicationInstance instance
@@ -49,11 +55,10 @@ abstract class BasicSpec extends Specification {
     private String currentSessionCookie
 
     void setup() {
-        executor.queueCapacity = 1
-        executor.corePoolSize = 200
-        executor.initialize()
+        initExecutor()
+        clearEventsAssertions()
         createBucketIndex()
-        clearBucket()
+        clearSessions()
     }
 
     void cleanup() {
@@ -61,14 +66,15 @@ abstract class BasicSpec extends Specification {
         stopExtraApplicationInstance()
     }
 
-    protected void startExtraApplicationInstance(String namespace = sessionCouchbase.persistent.namespace) {
+    protected void startExtraApplicationInstance(String namespace = sessionCouchbase.applicationNamespace) {
         URL[] urls = [new File('/build/classes/test').toURI().toURL()]
         def classLoader = new URLClassLoader(urls, getClass().classLoader)
         def runnerClass = classLoader.loadClass(ApplicationInstanceRunner.class.name)
         def runnerInstance = runnerClass.newInstance()
         instance = new ApplicationInstance(runnerClass, runnerInstance)
         runnerClass.getMethod('setNamespace', String).invoke(runnerInstance, namespace)
-        runnerClass.getMethod('setPrincipalSessionsEnabled', boolean).invoke(runnerInstance, sessionCouchbase.persistent.principalSessions.enabled)
+        runnerClass.getMethod('setPrincipalSessionsEnabled', boolean).invoke(runnerInstance, sessionCouchbase.principalSessions.enabled)
+        runnerClass.getMethod('setRetryMaxAttempts', int).invoke(runnerInstance, sessionCouchbase.retry.maxAttempts)
         runnerClass.getMethod('run').invoke(runnerInstance)
         extraInstancePort = runnerClass.getMethod('getPort').invoke(runnerInstance) as int
     }
@@ -81,7 +87,7 @@ abstract class BasicSpec extends Specification {
     }
 
     protected boolean currentSessionExists() {
-        return template.exists(getCurrentSessionId())
+        return sessionDao.exists(getCurrentSessionId())
     }
 
     protected int getSessionTimeout() {
@@ -143,6 +149,10 @@ abstract class BasicSpec extends Specification {
         return get('session/attribute', Message, extraInstancePort)
     }
 
+    protected ResponseEntity<Message> getGlobalSessionAttribute() {
+        return get('session/attribute/global', Message, getPort())
+    }
+
     protected ResponseEntity<Message> getGlobalSessionAttributeFromExtraInstance() {
         return get('session/attribute/global', Message, extraInstancePort)
     }
@@ -183,11 +193,20 @@ abstract class BasicSpec extends Specification {
         currentSessionCookie = null
     }
 
-    protected void clearBucket() {
-        if (template) {
-            def result = template.queryN1QL(simple("DELETE FROM $couchbase.bucket.name"))
-            failOnErrors(result)
-        }
+    protected void clearSessions() {
+        sessionDao.deleteAll()
+    }
+
+    protected boolean sessionCreatedEventSent() {
+        return eventConsumer.sessionCreated
+    }
+
+    protected boolean sessionExpiredEventSent() {
+        return eventConsumer.sessionExpired
+    }
+
+    protected boolean sessionDeletedEventSent() {
+        return eventConsumer.sessionDeleted
     }
 
     private void createBucketIndex() {
@@ -200,6 +219,16 @@ abstract class BasicSpec extends Specification {
             }
             bucketIndexCreated = true
         }
+    }
+
+    private void clearEventsAssertions() {
+        eventConsumer.resetAssertions()
+    }
+
+    private void initExecutor() {
+        executor.queueCapacity = 1
+        executor.corePoolSize = 200
+        executor.initialize()
     }
 
     private static void failOnErrors(N1qlQueryResult result) {
