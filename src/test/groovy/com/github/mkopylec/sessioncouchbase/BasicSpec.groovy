@@ -59,7 +59,6 @@ abstract class BasicSpec extends Specification {
     private String currentSessionCookie
 
     void setup() {
-        initExecutor()
         clearEventsAssertions()
         createBucketIndex()
         clearSessions()
@@ -102,6 +101,7 @@ abstract class BasicSpec extends Specification {
     }
 
     protected void executeConcurrently(Closure operation) {
+        initExecutor()
         def futures = []
         for (int i = 0; i < 100; i++) {
             def future = executor.submit(new Runnable() {
