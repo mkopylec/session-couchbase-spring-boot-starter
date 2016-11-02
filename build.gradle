@@ -45,7 +45,7 @@ dependencies {
 
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootVersion
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springBootVersion
-    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-undertow', version: springBootVersion
+//    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-undertow', version: springBootVersion
     testCompile group: 'org.spockframework', name: 'spock-spring', version: '1.0-groovy-2.4'
 }
 
