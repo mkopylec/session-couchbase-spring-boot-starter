@@ -2,10 +2,10 @@ package com.github.mkopylec.sessioncouchbase.specification.concurrency
 
 import com.github.mkopylec.sessioncouchbase.BasicSpec
 import com.github.mkopylec.sessioncouchbase.Message
-import org.springframework.test.context.TestPropertySource
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.client.HttpServerErrorException
 
-@TestPropertySource(properties = ['session-couchbase.in-memory.enabled: true'])
+@ActiveProfiles('in-memory')
 class InMemoryConcurrentModificationsSpec extends BasicSpec {
 
     def "Should not fail to concurrently set HTTP session attributes"() {

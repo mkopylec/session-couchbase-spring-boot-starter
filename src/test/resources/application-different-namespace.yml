@@ -1,0 +1,2 @@
+session-couchbase:
+  application-namespace: other-test-application

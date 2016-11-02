@@ -1,11 +1,11 @@
 package com.github.mkopylec.sessioncouchbase.specification.principal
 
 import com.github.mkopylec.sessioncouchbase.BasicSpec
-import org.springframework.test.context.TestPropertySource
+import org.springframework.test.context.ActiveProfiles
 
 import static com.github.mkopylec.sessioncouchbase.assertions.Assertions.assertThat
 
-@TestPropertySource(properties = ['session-couchbase.principal-sessions.enabled: true'])
+@ActiveProfiles('principal-sessions')
 abstract class PrincipalSessionsSpec extends BasicSpec {
 
     def "Should get principal HTTP sessions when they exist"() {

@@ -11,9 +11,7 @@ class ApplicationInstanceRunner {
     private final Object monitor = new Object()
     private EmbeddedWebApplicationContext context
     private boolean shouldWait
-    private String namespace
-    private boolean principalSessionsEnabled
-    private int maxAttempts
+    private String activeProfiles
     private int port
 
     void run() {
@@ -29,16 +27,8 @@ class ApplicationInstanceRunner {
         context = null
     }
 
-    void setNamespace(String namespace) {
-        this.namespace = namespace
-    }
-
-    void setPrincipalSessionsEnabled(boolean principalSessionsEnabled) {
-        this.principalSessionsEnabled = principalSessionsEnabled
-    }
-
-    void setRetryMaxAttempts(int maxAttempts) {
-        this.maxAttempts = maxAttempts
+    void setActiveProfiles(String activeProfiles) {
+        this.activeProfiles = activeProfiles
     }
 
     int getPort() {
@@ -64,12 +54,7 @@ class ApplicationInstanceRunner {
 
         @Override
         public void run() {
-            context = SpringApplication.run(TestApplication,
-                    '--server.port=0',
-                    "--session-couchbase.application-namespace=$namespace",
-                    "--session-couchbase.principal-sessions.enabled=$principalSessionsEnabled",
-                    "--session-couchbase.retry.max-attempts=$maxAttempts"
-            ) as EmbeddedWebApplicationContext
+            context = SpringApplication.run(TestApplication, '--server.port=0', "--spring.profiles.active=$activeProfiles") as EmbeddedWebApplicationContext
             port = context.embeddedServletContainer.port
             synchronized (monitor) {
                 shouldWait = false

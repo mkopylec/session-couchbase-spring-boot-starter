@@ -1,7 +1,7 @@
 package com.github.mkopylec.sessioncouchbase.specification.principal
 
-import org.springframework.test.context.TestPropertySource
+import org.springframework.test.context.ActiveProfiles
 
-@TestPropertySource(properties = ['session-couchbase.in-memory.enabled: true'])
+@ActiveProfiles('in-memory')
 class InMemoryPrincipalSessionsSpec extends PrincipalSessionsSpec {
 }

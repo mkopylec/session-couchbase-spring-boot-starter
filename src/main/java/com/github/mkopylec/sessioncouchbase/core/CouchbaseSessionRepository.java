@@ -154,8 +154,13 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
         Map<String, CouchbaseSession> sessionsById = new HashMap<>(sessionsDocument.getSessionIds().size());
         sessionsDocument.getSessionIds().forEach(sessionId -> {
             CouchbaseSession session = getSession(sessionId);
-            sessionsById.put(sessionId, session);
+            if (session != null) {
+                sessionsById.put(sessionId, session);
+            }
         });
+        if (sessionsById.isEmpty()) {
+            dao.delete(indexValue);
+        }
 
         log.debug("Principals {} sessions with IDs {} have been found", indexValue, sessionsById.keySet());
 
@@ -177,7 +182,6 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
             dao.save(sessionsDocument);
         }
         log.debug("Principals {} session with ID {} has been added", principal, session.getId());
-        dao.updateExpirationTime(principal, getSessionDocumentExpiration());
     }
 
     protected void deleteSession(CouchbaseSession session) {

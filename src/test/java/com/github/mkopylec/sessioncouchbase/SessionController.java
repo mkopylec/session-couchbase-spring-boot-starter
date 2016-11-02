@@ -25,7 +25,7 @@ import static org.springframework.session.FindByIndexNameSessionRepository.PRINC
 @RequestMapping("session")
 public class SessionController {
 
-    private static final String PRINCIPAL_NAME = "user";
+    public static final String PRINCIPAL_NAME = "user";
     private static final String SESSION_ATTRIBUTE_NAME = "attribute";
     private static final String SECOND_SESSION_ATTRIBUTE_NAME = "attribute2";
 

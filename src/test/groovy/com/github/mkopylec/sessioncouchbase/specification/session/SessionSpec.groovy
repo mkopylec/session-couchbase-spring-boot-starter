@@ -2,6 +2,7 @@ package com.github.mkopylec.sessioncouchbase.specification.session
 
 import com.github.mkopylec.sessioncouchbase.BasicSpec
 import com.github.mkopylec.sessioncouchbase.Message
+import org.springframework.web.client.HttpServerErrorException
 
 import static com.github.mkopylec.sessioncouchbase.assertions.Assertions.assertThat
 
@@ -89,5 +90,36 @@ abstract class SessionSpec extends BasicSpec {
                 .hasNoBody()
         assertThat(getSecondSessionAttribute())
                 .hasBody(message2)
+    }
+
+    def "Should fail to get principal HTTP session when principal HTTP sessions are disabled"() {
+        given:
+        setPrincipalSessionAttribute()
+
+        when:
+        getPrincipalSessions()
+
+        then:
+        thrown HttpServerErrorException
+    }
+
+    def "Should get global and application namespace HTTP session attribute names"() {
+        given:
+        def message = new Message(text: 'how do you do', number: 10)
+        setGlobalSessionAttribute message
+        setSessionAttribute message
+
+        when:
+        def response = getSessionAttributeNames()
+
+        then:
+        assertThat(response)
+                .hasSessionAttributeNames(
+                'attribute',
+                'com.github.mkopylec.sessioncouchbase.core.CouchbaseSession.global.attribute',
+                'com.github.mkopylec.sessioncouchbase.core.CouchbaseSession.global.$lastAccessedTime',
+                'com.github.mkopylec.sessioncouchbase.core.CouchbaseSession.global.$creationTime',
+                'com.github.mkopylec.sessioncouchbase.core.CouchbaseSession.global.$maxInactiveInterval'
+        )
     }
 }

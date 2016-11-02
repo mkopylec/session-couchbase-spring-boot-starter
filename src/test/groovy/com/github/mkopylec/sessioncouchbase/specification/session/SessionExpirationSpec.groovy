@@ -2,11 +2,11 @@ package com.github.mkopylec.sessioncouchbase.specification.session
 
 import com.github.mkopylec.sessioncouchbase.BasicSpec
 import com.github.mkopylec.sessioncouchbase.Message
-import org.springframework.test.context.TestPropertySource
+import org.springframework.test.context.ActiveProfiles
 
 import static com.github.mkopylec.sessioncouchbase.assertions.Assertions.assertThat
 
-@TestPropertySource(properties = ['session-couchbase.timeout-in-seconds: 1'])
+@ActiveProfiles('quick-expiration')
 abstract class SessionExpirationSpec extends BasicSpec {
 
     def "Should not get HTTP session attribute when session has expired"() {
@@ -30,7 +30,7 @@ abstract class SessionExpirationSpec extends BasicSpec {
         setSessionAttribute message
 
         when:
-        sleep(sessionTimeout + 1000)
+        sleep(sessionTimeout + 2000)
 
         then:
         !currentSessionExists()

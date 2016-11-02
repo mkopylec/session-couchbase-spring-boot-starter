@@ -1,22 +1,25 @@
 package com.github.mkopylec.sessioncouchbase.specification.principal
 
 import com.github.mkopylec.sessioncouchbase.BasicSpec
-import org.springframework.test.context.TestPropertySource
+import org.springframework.test.context.ActiveProfiles
 
 import static com.github.mkopylec.sessioncouchbase.assertions.Assertions.assertThat
 
-@TestPropertySource(properties = ['session-couchbase.principal-sessions.enabled: true', 'session-couchbase.timeout-in-seconds: 1'])
+@ActiveProfiles(['quick-expiration', 'principal-sessions'])
 abstract class PrincipalSessionsExpirationSpec extends BasicSpec {
 
     def "Should not get principal HTTP session when HTTP session have expired"() {
         given:
         setPrincipalSessionAttribute()
+        sleep(sessionTimeout + 100)
 
         when:
-        sleep(sessionTimeout + 1000)
+        def response = getPrincipalSessions()
 
         then:
-        assertThat(getPrincipalSessions())
+        sessionExpiredEventSent()
+        assertThat(response)
                 .hasNoSessionIds()
+        !currentPrincipalSessionsExists()
     }
 }

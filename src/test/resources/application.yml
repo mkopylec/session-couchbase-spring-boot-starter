@@ -8,10 +8,4 @@ session-couchbase:
   in-memory:
     enabled: false
 
-spring.couchbase:
-  bootstrap-hosts: localhost
-  bucket:
-    name: default
-    password:
-
 logging.level.com.github.mkopylec.sessioncouchbase: trace

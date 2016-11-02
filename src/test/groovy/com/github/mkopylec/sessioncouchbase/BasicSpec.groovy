@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties
 import org.springframework.boot.context.embedded.EmbeddedWebApplicationContext
 import org.springframework.boot.test.SpringApplicationContextLoader
 import org.springframework.boot.test.WebIntegrationTest
+import org.springframework.core.env.Environment
 import org.springframework.data.couchbase.core.CouchbaseTemplate
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -21,6 +22,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 
 import static com.couchbase.client.java.query.N1qlQuery.simple
+import static com.github.mkopylec.sessioncouchbase.SessionController.PRINCIPAL_NAME
 import static java.net.HttpCookie.parse
 import static org.springframework.http.HttpHeaders.COOKIE
 import static org.springframework.http.HttpMethod.DELETE
@@ -37,6 +39,8 @@ abstract class BasicSpec extends Specification {
     private RestTemplate rest = new RestTemplate()
     @Shared
     private ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor()
+    @Autowired
+    private Environment environment
     @Autowired(required = false)
     private CouchbaseTemplate template
     @Autowired
@@ -66,15 +70,14 @@ abstract class BasicSpec extends Specification {
         stopExtraApplicationInstance()
     }
 
-    protected void startExtraApplicationInstance(String namespace = sessionCouchbase.applicationNamespace) {
+    protected void startExtraApplicationInstance(String... activeProfiles) {
         URL[] urls = [new File('/build/classes/test').toURI().toURL()]
         def classLoader = new URLClassLoader(urls, getClass().classLoader)
         def runnerClass = classLoader.loadClass(ApplicationInstanceRunner.class.name)
         def runnerInstance = runnerClass.newInstance()
         instance = new ApplicationInstance(runnerClass, runnerInstance)
-        runnerClass.getMethod('setNamespace', String).invoke(runnerInstance, namespace)
-        runnerClass.getMethod('setPrincipalSessionsEnabled', boolean).invoke(runnerInstance, sessionCouchbase.principalSessions.enabled)
-        runnerClass.getMethod('setRetryMaxAttempts', int).invoke(runnerInstance, sessionCouchbase.retry.maxAttempts)
+        def profiles = activeProfiles ? activeProfiles + environment.activeProfiles : environment.activeProfiles
+        runnerClass.getMethod('setActiveProfiles', String).invoke(runnerInstance, profiles.join(','))
         runnerClass.getMethod('run').invoke(runnerInstance)
         extraInstancePort = runnerClass.getMethod('getPort').invoke(runnerInstance) as int
     }
@@ -88,6 +91,10 @@ abstract class BasicSpec extends Specification {
 
     protected boolean currentSessionExists() {
         return sessionDao.exists(getCurrentSessionId())
+    }
+
+    protected boolean currentPrincipalSessionsExists() {
+        return sessionDao.exists(PRINCIPAL_NAME)
     }
 
     protected int getSessionTimeout() {

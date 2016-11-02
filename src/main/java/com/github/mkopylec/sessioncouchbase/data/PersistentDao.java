@@ -22,13 +22,13 @@ import static com.couchbase.client.java.document.json.JsonArray.from;
 import static com.couchbase.client.java.query.N1qlQuery.parameterized;
 import static org.springframework.util.Assert.isTrue;
 
-public class CouchbaseDao implements SessionDao {
+public class PersistentDao implements SessionDao {
 
     protected final String bucket;
     protected final CouchbaseTemplate couchbaseTemplate;
     protected final RetryTemplate retryTemplate;
 
-    public CouchbaseDao(CouchbaseProperties couchbase, CouchbaseTemplate couchbaseTemplate, RetryTemplate retryTemplate) {
+    public PersistentDao(CouchbaseProperties couchbase, CouchbaseTemplate couchbaseTemplate, RetryTemplate retryTemplate) {
         bucket = couchbase.getBucket().getName();
         this.couchbaseTemplate = couchbaseTemplate;
         this.retryTemplate = retryTemplate;

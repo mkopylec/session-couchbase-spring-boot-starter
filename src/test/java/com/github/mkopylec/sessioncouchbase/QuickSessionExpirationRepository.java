@@ -6,21 +6,19 @@ import com.github.mkopylec.sessioncouchbase.core.CouchbaseSessionRepository;
 import com.github.mkopylec.sessioncouchbase.core.Serializer;
 import com.github.mkopylec.sessioncouchbase.data.SessionDao;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@ConditionalOnProperty(name = "session-couchbase.in-memory.enabled", havingValue = "false", matchIfMissing = true)
-public class ImmediateSessionExpirationCouchbaseRepository extends CouchbaseSessionRepository {
+public class QuickSessionExpirationRepository extends CouchbaseSessionRepository {
 
     @Autowired
-    public ImmediateSessionExpirationCouchbaseRepository(SessionCouchbaseProperties sessionCouchbase, SessionDao dao, ObjectMapper mapper, Serializer serializer, ApplicationEventPublisher eventPublisher) {
+    public QuickSessionExpirationRepository(SessionCouchbaseProperties sessionCouchbase, SessionDao dao, ObjectMapper mapper, Serializer serializer, ApplicationEventPublisher eventPublisher) {
         super(sessionCouchbase, dao, mapper, serializer, eventPublisher);
     }
 
     @Override
     protected int getSessionDocumentExpiration() {
-        return sessionTimeout;
+        return sessionTimeout + 1;
     }
 }

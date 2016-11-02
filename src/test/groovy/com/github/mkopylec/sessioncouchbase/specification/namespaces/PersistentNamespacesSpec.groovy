@@ -2,9 +2,11 @@ package com.github.mkopylec.sessioncouchbase.specification.namespaces
 
 import com.github.mkopylec.sessioncouchbase.BasicSpec
 import com.github.mkopylec.sessioncouchbase.Message
+import org.springframework.test.context.ActiveProfiles
 
 import static com.github.mkopylec.sessioncouchbase.assertions.Assertions.assertThat
 
+@ActiveProfiles('persistent')
 class PersistentNamespacesSpec extends BasicSpec {
 
     def "Should set and get global HTTP session attribute using the same namespace"() {
@@ -39,7 +41,7 @@ class PersistentNamespacesSpec extends BasicSpec {
         given:
         def message = new Message(text: 'i robot 3', number: 3)
         setGlobalSessionAttribute message
-        startExtraApplicationInstance('other_namespace')
+        startExtraApplicationInstance('different-namespace')
 
         when:
         def response = getGlobalSessionAttributeFromExtraInstance()
@@ -53,7 +55,7 @@ class PersistentNamespacesSpec extends BasicSpec {
         given:
         def message = new Message(text: 'i robot 4', number: 4)
         setSessionAttribute message
-        startExtraApplicationInstance('other_namespace')
+        startExtraApplicationInstance('different-namespace')
 
         when:
         def response = getSessionAttributeFromExtraInstance()
@@ -67,7 +69,7 @@ class PersistentNamespacesSpec extends BasicSpec {
         given:
         def message = new Message(text: 'delete me', number: 71830)
         setGlobalSessionAttribute message
-        startExtraApplicationInstance('other_namespace')
+        startExtraApplicationInstance('different-namespace')
 
         when:
         deleteGlobalSessionAttribute()
