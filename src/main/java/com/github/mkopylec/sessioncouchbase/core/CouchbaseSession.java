@@ -168,6 +168,11 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
         return globalAttributesToRemove;
     }
 
+    public void clearChangedGlobalAttributes() {
+        globalAttributesToUpdate.clear();
+        globalAttributesToRemove.clear();
+    }
+
     public Map<String, Object> getGlobalAttributes() {
         return globalAttributes;
     }
@@ -180,8 +185,17 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
         return namespaceAttributesToRemove;
     }
 
+    public void clearChangedNamespaceAttributes() {
+        namespaceAttributesToUpdate.clear();
+        namespaceAttributesToRemove.clear();
+    }
+
     public Map<String, Object> getNamespaceAttributes() {
         return namespaceAttributes;
+    }
+
+    public boolean isGlobalPersistenceRequired() {
+        return MapUtils.isNotEmpty(globalAttributesToUpdate) || CollectionUtils.isNotEmpty(globalAttributesToRemove);
     }
 
     public boolean isNamespacePersistenceRequired() {

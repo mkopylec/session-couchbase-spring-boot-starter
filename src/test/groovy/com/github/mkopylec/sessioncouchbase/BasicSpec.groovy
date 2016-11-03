@@ -67,6 +67,7 @@ abstract class BasicSpec extends Specification {
     void cleanup() {
         clearSessionCookie()
         stopExtraApplicationInstance()
+        waitForContainerToProcessRequest()
     }
 
     protected void startExtraApplicationInstance(String... activeProfiles) {
@@ -309,5 +310,9 @@ abstract class BasicSpec extends Specification {
         if (cookie != null) {
             currentSessionCookie = cookie.toString()
         }
+    }
+
+    private void waitForContainerToProcessRequest() {
+        sleep(200)
     }
 }

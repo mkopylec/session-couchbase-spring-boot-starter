@@ -81,19 +81,24 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
 
     @Override
     public void save(CouchbaseSession session) {
-        Map<String, Object> serializedGlobal = serializer.serializeSessionAttributes(session.getGlobalAttributesToUpdate());
-        dao.updateSession(serializedGlobal, session.getGlobalAttributesToRemove(), GLOBAL_NAMESPACE, session.getId());
+        if (session.isGlobalPersistenceRequired()) {
+            Map<String, Object> serializedGlobal = serializer.serializeSessionAttributes(session.getGlobalAttributesToUpdate());
+            dao.updateSession(serializedGlobal, session.getGlobalAttributesToRemove(), GLOBAL_NAMESPACE, session.getId());
+            log.debug("Global attributes of HTTP session with ID {} has been saved", session.getId());
+            session.clearChangedGlobalAttributes();
+        }
 
         if (session.isNamespacePersistenceRequired()) {
             Map<String, Object> serializedNamespace = serializer.serializeSessionAttributes(session.getNamespaceAttributesToUpdate());
             dao.updateSession(serializedNamespace, session.getNamespaceAttributesToRemove(), namespace, session.getId());
+            log.debug("Application namespace attributes of HTTP session with ID {} has been saved", session.getId());
+            session.clearChangedNamespaceAttributes();
         }
 
         if (isOperationOnPrincipalSessionsRequired(session)) {
             savePrincipalSession(session);
         }
         dao.updateExpirationTime(session.getId(), getSessionDocumentExpiration());
-        log.debug("HTTP session with ID {} has been saved", session.getId());
     }
 
     @Override
