@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.System.currentTimeMillis;
+import static java.util.Optional.ofNullable;
 
 public class InMemoryDao implements SessionDao, InitializingBean {
 
@@ -21,28 +22,36 @@ public class InMemoryDao implements SessionDao, InitializingBean {
 
     @Override
     public void insertNamespace(String namespace, String id) {
-        sessions.get(id).getData().put(namespace, new HashMap<>());
+        ofNullable(sessions.get(id)).ifPresent(
+                document -> document.getData().put(namespace, new HashMap<>())
+        );
     }
 
     @Override
     public void updateSession(Map<String, Object> attributesToUpdate, Set<String> attributesToRemove, String namespace, String id) {
-        Map<String, Object> namespaceData = sessions.get(id).getData().get(namespace);
-        if (MapUtils.isNotEmpty(attributesToUpdate)) {
-            attributesToUpdate.forEach(namespaceData::put);
-        }
-        if (CollectionUtils.isNotEmpty(attributesToRemove)) {
-            attributesToRemove.forEach(namespaceData::remove);
-        }
+        ofNullable(sessions.get(id)).ifPresent(document -> {
+            Map<String, Object> namespaceData = document.getData().get(namespace);
+            if (MapUtils.isNotEmpty(attributesToUpdate)) {
+                attributesToUpdate.forEach(namespaceData::put);
+            }
+            if (CollectionUtils.isNotEmpty(attributesToRemove)) {
+                attributesToRemove.forEach(namespaceData::remove);
+            }
+        });
     }
 
     @Override
     public void updatePutPrincipalSession(String principal, String sessionId) {
-        principalSessions.get(principal).getSessionIds().add(sessionId);
+        ofNullable(principalSessions.get(principal)).ifPresent(
+                document -> document.getSessionIds().add(sessionId)
+        );
     }
 
     @Override
     public void updateRemovePrincipalSession(String principal, String sessionId) {
-        principalSessions.get(principal).getSessionIds().remove(sessionId);
+        ofNullable(principalSessions.get(principal)).ifPresent(
+                document -> document.getSessionIds().remove(sessionId)
+        );
     }
 
     @Override

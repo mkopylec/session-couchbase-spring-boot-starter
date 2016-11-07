@@ -16,7 +16,6 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.removeStart;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.session.FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME;
@@ -41,7 +40,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     protected Map<String, Object> namespaceAttributesToUpdate = new HashMap<>();
     protected Set<String> namespaceAttributesToRemove = new HashSet<>();
     protected Map<String, Object> namespaceAttributes = new HashMap<>();
-    protected boolean principalSession = false;
+    protected boolean principalSessionsUpdateRequired = false;
 
     public CouchbaseSession(int timeoutInSeconds) {
         long now = currentTimeMillis();
@@ -55,7 +54,7 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
         this.globalAttributes = globalAttributes == null ? new HashMap<>() : globalAttributes;
         this.namespaceAttributes = namespaceAttributes == null ? new HashMap<>() : namespaceAttributes;
         if (containsPrincipalAttribute()) {
-            principalSession = true;
+            principalSessionsUpdateRequired = true;
         }
     }
 
@@ -130,14 +129,14 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
         if (isGlobal(attributeName)) {
             String name = getNameFromGlobalName(attributeName);
             if (PRINCIPAL_NAME_INDEX_NAME.equals(name)) {
-                principalSession = true;
+                principalSessionsUpdateRequired = true;
             }
             globalAttributes.put(name, attributeValue);
             globalAttributesToUpdate.put(name, attributeValue);
             log.trace("Global HTTP session attribute: [name='{}', value={}] has been set", name, attributeValue);
         } else {
             if (PRINCIPAL_NAME_INDEX_NAME.equals(attributeName)) {
-                principalSession = true;
+                principalSessionsUpdateRequired = true;
             }
             namespaceAttributes.put(attributeName, attributeValue);
             namespaceAttributesToUpdate.put(attributeName, attributeValue);
@@ -202,8 +201,8 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
         return MapUtils.isNotEmpty(namespaceAttributesToUpdate) || CollectionUtils.isNotEmpty(namespaceAttributesToRemove);
     }
 
-    public boolean isPrincipalSession() {
-        return isNotBlank(getPrincipalAttribute());
+    public boolean isPrincipalSessionsUpdateRequired() {
+        return principalSessionsUpdateRequired;
     }
 
     public String getPrincipalAttribute() {
@@ -212,6 +211,10 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
             principal = namespaceAttributes.get(PRINCIPAL_NAME_INDEX_NAME);
         }
         return (String) principal;
+    }
+
+    public void unsetPrincipalSessionsUpdateRequired() {
+        principalSessionsUpdateRequired = false;
     }
 
     protected void setCreationTime(long creationTime) {

@@ -187,6 +187,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
             dao.save(sessionsDocument);
         }
         log.debug("Principals {} session with ID {} has been added", principal, session.getId());
+        session.unsetPrincipalSessionsUpdateRequired();
     }
 
     protected void deleteSession(CouchbaseSession session) {
@@ -199,6 +200,6 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
     }
 
     protected boolean isOperationOnPrincipalSessionsRequired(CouchbaseSession session) {
-        return principalSessionsEnabled && session.isPrincipalSession();
+        return principalSessionsEnabled && session.isPrincipalSessionsUpdateRequired();
     }
 }
