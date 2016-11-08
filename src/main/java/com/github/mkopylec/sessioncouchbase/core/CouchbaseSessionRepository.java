@@ -12,10 +12,10 @@ import org.springframework.session.events.SessionCreatedEvent;
 import org.springframework.session.events.SessionDeletedEvent;
 import org.springframework.session.events.SessionExpiredEvent;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.emptyMap;
@@ -181,7 +181,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
         if (dao.exists(principal)) {
             dao.updatePutPrincipalSession(principal, session.getId());
         } else {
-            Set<String> sessionIds = new HashSet<>(1);
+            List<String> sessionIds = new ArrayList<>(1);
             sessionIds.add(session.getId());
             PrincipalSessionsDocument sessionsDocument = new PrincipalSessionsDocument(principal, sessionIds);
             dao.save(sessionsDocument);

@@ -2,21 +2,18 @@ package com.github.mkopylec.sessioncouchbase.data;
 
 import com.couchbase.client.java.document.json.JsonArray;
 import com.couchbase.client.java.document.json.JsonObject;
-import com.couchbase.client.java.error.DocumentDoesNotExistException;
 import com.couchbase.client.java.query.N1qlQueryResult;
 import com.couchbase.client.java.query.N1qlQueryRow;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties;
-import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.data.couchbase.core.CouchbaseQueryExecutionException;
 import org.springframework.data.couchbase.core.CouchbaseTemplate;
 import org.springframework.retry.support.RetryTemplate;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,15 +23,14 @@ import static com.couchbase.client.java.document.json.JsonArray.from;
 import static com.couchbase.client.java.document.json.JsonObject.create;
 import static com.couchbase.client.java.query.N1qlParams.build;
 import static com.couchbase.client.java.query.N1qlQuery.parameterized;
-import static com.couchbase.client.java.query.N1qlQuery.simple;
 import static com.couchbase.client.java.query.consistency.ScanConsistency.REQUEST_PLUS;
+import static java.util.stream.Collectors.toList;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class PersistentDao implements SessionDao {
 
     private static final Logger log = getLogger(PersistentDao.class);
 
-    protected final ObjectMapper mapper = new ObjectMapper();
     protected final String bucket;
     protected final CouchbaseTemplate couchbaseTemplate;
     protected final RetryTemplate retryTemplate;
@@ -95,17 +91,37 @@ public class PersistentDao implements SessionDao {
         printAllDocs();
         String statement = "SELECT * FROM " + bucket + ".data.`" + namespace + "` USE KEYS $1";
         N1qlQueryResult result = executeQuery(statement, from(id));
-        return getDocument(statement, result, Map.class);
+        JsonObject document = getDocument(namespace, result);
+        if (document == null) {
+            return null;
+        }
+        return document.toMap();
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public SessionDocument findById(String id) {
-        return findByDocumentKey(id, SessionDocument.class);
+        JsonObject document = findByDocumentKey(id);
+        if (document == null) {
+            return null;
+        }
+        Map<String, Object> namespaces = document.toMap();
+        //TODO get("data")
+        Map<String, Map<String, Object>> data = new HashMap<>(namespaces.size());
+        namespaces.forEach((namespace, namespaceData) -> data.put(namespace, (Map<String, Object>) namespaceData));
+        return new SessionDocument(id, data);
     }
 
     @Override
     public PrincipalSessionsDocument findByPrincipal(String principal) {
-        return findByDocumentKey(principal, PrincipalSessionsDocument.class);
+        JsonObject document = findByDocumentKey(principal);
+        if (document == null) {
+            return null;
+        }
+        List<String> sessionIds = document.getArray("sessionIds").toList().stream()
+                .map(sessionId -> (String) sessionId)
+                .collect(toList());
+        return new PrincipalSessionsDocument(principal, sessionIds);
     }
 
     @Override
@@ -133,7 +149,7 @@ public class PersistentDao implements SessionDao {
     @Override
     public boolean exists(String documentId) {
         printAllDocs();
-        String statement = "SELECT COUNT(*) FROM " + bucket + " USE KEYS $1";
+        String statement = "SELECT * FROM " + bucket + " USE KEYS $1";
         N1qlQueryResult result = executeQuery(statement, from(documentId));
         return result.rows().hasNext();
     }
@@ -142,8 +158,8 @@ public class PersistentDao implements SessionDao {
     public void delete(String id) {
         printAllDocs();
 //        try {
-            String statement = "DELETE FROM " + bucket + " USE KEYS $1";
-            executeQuery(statement, from(id));
+        String statement = "DELETE FROM " + bucket + " USE KEYS $1";
+        executeQuery(statement, from(id));
 //        } catch (CouchbaseQueryExecutionException ex) {
 //            if (!(ex.getCause() instanceof DocumentDoesNotExistException)) {
 //                throw ex;
@@ -161,27 +177,23 @@ public class PersistentDao implements SessionDao {
     }
 
     protected void printAllDocs() {
-        N1qlQueryResult rows = couchbaseTemplate.queryN1QL(simple("SELECT * FROM " + bucket, build().consistency(REQUEST_PLUS)));
-        log.info("### all docs: {}", rows.allRows());
+//        N1qlQueryResult rows = couchbaseTemplate.queryN1QL(simple("SELECT * FROM " + bucket, build().consistency(REQUEST_PLUS)));
+//        log.info("### all docs: {}", rows.allRows());
     }
 
-    protected <T> T findByDocumentKey(String key, Class<T> type) {
+    protected JsonObject findByDocumentKey(String key) {
         printAllDocs();
         String statement = "SELECT * FROM " + bucket + " USE KEYS $1";
         N1qlQueryResult result = executeQuery(statement, from(key));
-        return getDocument(statement, result, type);
+        return getDocument(bucket, result);
     }
 
-    protected <T> T getDocument(String statement, N1qlQueryResult result, Class<T> type) {
+    protected JsonObject getDocument(String rootNode, N1qlQueryResult result) {
         List<N1qlQueryRow> attributes = result.allRows();
         if (attributes.isEmpty()) {
             return null;
         }
-        try {
-            return mapper.readValue(attributes.get(0).byteValue(), type);
-        } catch (IOException e) {
-            throw new CouchbaseQueryExecutionException("Error executing N1QL statement '" + statement + ",", e);
-        }
+        return attributes.get(0).value().getObject(rootNode);
     }
 
     protected N1qlQueryResult executeQuery(String statement, JsonArray parameters) {
