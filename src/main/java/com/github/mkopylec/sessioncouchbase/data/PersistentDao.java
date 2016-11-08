@@ -1,9 +1,11 @@
 package com.github.mkopylec.sessioncouchbase.data;
 
 import com.couchbase.client.java.document.json.JsonArray;
+import com.couchbase.client.java.document.json.JsonObject;
 import com.couchbase.client.java.error.DocumentDoesNotExistException;
 import com.couchbase.client.java.query.N1qlQueryResult;
 import com.couchbase.client.java.query.N1qlQueryRow;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
@@ -13,6 +15,7 @@ import org.springframework.data.couchbase.core.CouchbaseQueryExecutionException;
 import org.springframework.data.couchbase.core.CouchbaseTemplate;
 import org.springframework.retry.support.RetryTemplate;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,17 +23,18 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import static com.couchbase.client.java.document.json.JsonArray.from;
+import static com.couchbase.client.java.document.json.JsonObject.create;
 import static com.couchbase.client.java.query.N1qlParams.build;
 import static com.couchbase.client.java.query.N1qlQuery.parameterized;
 import static com.couchbase.client.java.query.N1qlQuery.simple;
 import static com.couchbase.client.java.query.consistency.ScanConsistency.REQUEST_PLUS;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.springframework.util.Assert.isTrue;
 
 public class PersistentDao implements SessionDao {
 
     private static final Logger log = getLogger(PersistentDao.class);
 
+    protected final ObjectMapper mapper = new ObjectMapper();
     protected final String bucket;
     protected final CouchbaseTemplate couchbaseTemplate;
     protected final RetryTemplate retryTemplate;
@@ -91,24 +95,17 @@ public class PersistentDao implements SessionDao {
         printAllDocs();
         String statement = "SELECT * FROM " + bucket + ".data.`" + namespace + "` USE KEYS $1";
         N1qlQueryResult result = executeQuery(statement, from(id));
-        List<N1qlQueryRow> attributes = result.allRows();
-        isTrue(attributes.size() < 2, "Invalid HTTP session state. Multiple namespaces '" + namespace + "' for session ID '" + id + "'");
-        if (attributes.isEmpty()) {
-            return null;
-        }
-        return (Map<String, Object>) attributes.get(0).value().toMap().get(namespace);
+        return getDocument(statement, result, Map.class);
     }
 
     @Override
     public SessionDocument findById(String id) {
-        printAllDocs();
-        return couchbaseTemplate.findById(id, SessionDocument.class);
+        return findByDocumentKey(id, SessionDocument.class);
     }
 
     @Override
     public PrincipalSessionsDocument findByPrincipal(String principal) {
-        printAllDocs();
-        return couchbaseTemplate.findById(principal, PrincipalSessionsDocument.class);
+        return findByDocumentKey(principal, PrincipalSessionsDocument.class);
     }
 
     @Override
@@ -120,32 +117,40 @@ public class PersistentDao implements SessionDao {
     @Override
     public void save(SessionDocument document) {
         printAllDocs();
-        couchbaseTemplate.save(document);
+        String statement = "UPSERT INTO " + bucket + " (KEY, VALUE) VALUES ($1, $2)";
+        JsonObject json = create().put("data", document.getData());
+        executeQuery(statement, from(document.getId(), json));
     }
 
     @Override
     public void save(PrincipalSessionsDocument document) {
         printAllDocs();
+        String statement = "UPSERT INTO " + bucket + " (KEY, VALUE) VALUES ($1, $2)";
+        JsonObject json = create().put("sessionIds", document.getSessionIds());
+        executeQuery(statement, from(document.getPrincipal(), json));
         couchbaseTemplate.save(document);
     }
 
     @Override
     public boolean exists(String documentId) {
         printAllDocs();
-        return couchbaseTemplate.exists(documentId);
+        String statement = "SELECT * FROM " + bucket + " USE KEYS $1";
+        N1qlQueryResult result = executeQuery(statement, from(documentId));
+        return result.rows().hasNext();
     }
 
     @Override
     public void delete(String id) {
         printAllDocs();
-        try {
-            couchbaseTemplate.remove(id);
-        } catch (DataRetrievalFailureException ex) {
-            if (!(ex.getCause() instanceof DocumentDoesNotExistException)) {
-                throw ex;
-            }
-            //Do nothing
-        }
+//        try {
+            String statement = "DELETE FROM " + bucket + " USE KEYS $1";
+            executeQuery(statement, from(id));
+//        } catch (CouchbaseQueryExecutionException ex) {
+//            if (!(ex.getCause() instanceof DocumentDoesNotExistException)) {
+//                throw ex;
+//            }
+//            //Do nothing
+//        }
     }
 
     @Override
@@ -159,6 +164,25 @@ public class PersistentDao implements SessionDao {
     protected void printAllDocs() {
         N1qlQueryResult rows = couchbaseTemplate.queryN1QL(simple("SELECT * FROM " + bucket, build().consistency(REQUEST_PLUS)));
         log.info("### all docs: {}", rows.allRows());
+    }
+
+    protected <T> T findByDocumentKey(String key, Class<T> type) {
+        printAllDocs();
+        String statement = "SELECT * FROM " + bucket + " USE KEYS $1";
+        N1qlQueryResult result = executeQuery(statement, from(key));
+        return getDocument(statement, result, type);
+    }
+
+    protected <T> T getDocument(String statement, N1qlQueryResult result, Class<T> type) {
+        List<N1qlQueryRow> attributes = result.allRows();
+        if (attributes.isEmpty()) {
+            return null;
+        }
+        try {
+            return mapper.readValue(attributes.get(0).byteValue(), type);
+        } catch (IOException e) {
+            throw new CouchbaseQueryExecutionException("Error executing N1QL statement '" + statement + ",", e);
+        }
     }
 
     protected N1qlQueryResult executeQuery(String statement, JsonArray parameters) {
