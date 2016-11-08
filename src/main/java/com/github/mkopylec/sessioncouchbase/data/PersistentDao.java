@@ -41,12 +41,14 @@ public class PersistentDao implements SessionDao {
 
     @Override
     public void insertNamespace(String namespace, String id) {
+        printAllDocs();
         String statement = "UPDATE " + bucket + " USE KEYS $1 SET data.`" + namespace + "` = {}";
         executeQuery(statement, from(id, namespace));
     }
 
     @Override
     public void updateSession(Map<String, Object> attributesToUpdate, Set<String> attributesToRemove, String namespace, String id) {
+        printAllDocs();
         StringBuilder statement = new StringBuilder("UPDATE ").append(bucket).append(" USE KEYS $1");
         List<Object> parameters = new ArrayList<>(attributesToUpdate.size() + attributesToRemove.size() + 1);
         parameters.add(id);
@@ -69,12 +71,14 @@ public class PersistentDao implements SessionDao {
 
     @Override
     public void updatePutPrincipalSession(String principal, String sessionId) {
+        printAllDocs();
         String statement = "UPDATE " + bucket + " USE KEYS $1 SET sessionIds = ARRAY_PUT(sessionIds, $2)";
         executeQuery(statement, from(principal, sessionId));
     }
 
     @Override
     public void updateRemovePrincipalSession(String principal, String sessionId) {
+        printAllDocs();
         String statement = "UPDATE " + bucket + " USE KEYS $1 SET sessionIds = ARRAY_REMOVE(sessionIds, $2)";
         executeQuery(statement, from(principal, sessionId));
     }
@@ -82,6 +86,7 @@ public class PersistentDao implements SessionDao {
     @Override
     @SuppressWarnings("unchecked")
     public Map<String, Object> findSessionAttributes(String id, String namespace) {
+        printAllDocs();
         String statement = "SELECT * FROM " + bucket + ".data.`" + namespace + "` USE KEYS $1";
         N1qlQueryResult result = executeQuery(statement, from(id));
         List<N1qlQueryRow> attributes = result.allRows();
@@ -94,36 +99,43 @@ public class PersistentDao implements SessionDao {
 
     @Override
     public SessionDocument findById(String id) {
+        printAllDocs();
         return couchbaseTemplate.findById(id, SessionDocument.class);
     }
 
     @Override
     public PrincipalSessionsDocument findByPrincipal(String principal) {
+        printAllDocs();
         return couchbaseTemplate.findById(principal, PrincipalSessionsDocument.class);
     }
 
     @Override
     public void updateExpirationTime(String id, int expiry) {
+        printAllDocs();
         couchbaseTemplate.getCouchbaseBucket().touch(id, expiry);
     }
 
     @Override
     public void save(SessionDocument document) {
+        printAllDocs();
         couchbaseTemplate.save(document);
     }
 
     @Override
     public void save(PrincipalSessionsDocument document) {
+        printAllDocs();
         couchbaseTemplate.save(document);
     }
 
     @Override
     public boolean exists(String documentId) {
+        printAllDocs();
         return couchbaseTemplate.exists(documentId);
     }
 
     @Override
     public void delete(String id) {
+        printAllDocs();
         try {
             couchbaseTemplate.remove(id);
         } catch (DataRetrievalFailureException ex) {
@@ -136,11 +148,15 @@ public class PersistentDao implements SessionDao {
 
     @Override
     public void deleteAll() {
-        N1qlQueryResult rows = couchbaseTemplate.queryN1QL(simple("SELECT * FROM " + bucket));
-        log.info("### Before deletion: {}", rows.allRows());
+        printAllDocs();
         String statement = "DELETE FROM " + bucket + " d RETURNING d";
         N1qlQueryResult arg = executeQuery(statement, from());
         log.info("### Delete all. {} | {} | {} | {}", arg.errors(), arg.finalSuccess(), arg.status(), arg.allRows());
+    }
+
+    protected void printAllDocs() {
+        N1qlQueryResult rows = couchbaseTemplate.queryN1QL(simple("SELECT * FROM " + bucket));
+        log.info("### all docs: {}", rows.allRows());
     }
 
     protected N1qlQueryResult executeQuery(String statement, JsonArray parameters) {
