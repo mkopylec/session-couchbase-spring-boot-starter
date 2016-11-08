@@ -135,9 +135,9 @@ public class PersistentDao implements SessionDao {
 
     @Override
     public void deleteAll() {
-        String statement = "DELETE FROM " + bucket;
+        String statement = "DELETE FROM " + bucket + " d RETURNING d";
         N1qlQueryResult arg = executeQuery(statement, from());
-        log.info("### Delete all. {} | {} | {}", arg.errors(), arg.finalSuccess(), arg.status());
+        log.info("### Delete all. {} | {} | {} | {}", arg.errors(), arg.finalSuccess(), arg.status(), arg.allRows());
     }
 
     protected N1qlQueryResult executeQuery(String statement, JsonArray parameters) {
