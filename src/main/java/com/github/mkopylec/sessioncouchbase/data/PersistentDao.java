@@ -20,8 +20,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import static com.couchbase.client.java.document.json.JsonArray.from;
+import static com.couchbase.client.java.query.N1qlParams.build;
 import static com.couchbase.client.java.query.N1qlQuery.parameterized;
 import static com.couchbase.client.java.query.N1qlQuery.simple;
+import static com.couchbase.client.java.query.consistency.ScanConsistency.REQUEST_PLUS;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.util.Assert.isTrue;
 
@@ -161,7 +163,7 @@ public class PersistentDao implements SessionDao {
 
     protected N1qlQueryResult executeQuery(String statement, JsonArray parameters) {
         return retryTemplate.execute(context -> {
-            N1qlQueryResult result = couchbaseTemplate.queryN1QL(parameterized(statement, parameters));
+            N1qlQueryResult result = couchbaseTemplate.queryN1QL(parameterized(statement, parameters, build().consistency(REQUEST_PLUS)));
             if (isQueryFailed(result)) {
                 throw new CouchbaseQueryExecutionException("Error executing N1QL statement '" + statement + "'. " + result.errors());
             }
