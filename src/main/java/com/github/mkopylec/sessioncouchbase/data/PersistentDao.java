@@ -21,6 +21,7 @@ import java.util.Set;
 
 import static com.couchbase.client.java.document.json.JsonArray.from;
 import static com.couchbase.client.java.query.N1qlQuery.parameterized;
+import static com.couchbase.client.java.query.N1qlQuery.simple;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.util.Assert.isTrue;
 
@@ -135,6 +136,8 @@ public class PersistentDao implements SessionDao {
 
     @Override
     public void deleteAll() {
+        N1qlQueryResult rows = couchbaseTemplate.queryN1QL(simple("SELECT * FROM " + bucket));
+        log.info("### Before deletion: {}", rows.allRows());
         String statement = "DELETE FROM " + bucket + " d RETURNING d";
         N1qlQueryResult arg = executeQuery(statement, from());
         log.info("### Delete all. {} | {} | {} | {}", arg.errors(), arg.finalSuccess(), arg.status(), arg.allRows());
