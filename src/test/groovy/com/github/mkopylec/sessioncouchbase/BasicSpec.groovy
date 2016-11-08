@@ -5,6 +5,7 @@ import com.github.mkopylec.sessioncouchbase.configuration.SessionCouchbaseProper
 import com.github.mkopylec.sessioncouchbase.data.SessionDao
 import com.github.mkopylec.sessioncouchbase.utils.ApplicationInstance
 import com.github.mkopylec.sessioncouchbase.utils.ApplicationInstanceRunner
+import org.apache.commons.collections4.CollectionUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties
 import org.springframework.boot.context.embedded.EmbeddedWebApplicationContext
@@ -24,6 +25,7 @@ import spock.lang.Specification
 import static com.couchbase.client.java.query.N1qlQuery.simple
 import static com.github.mkopylec.sessioncouchbase.SessionController.PRINCIPAL_NAME
 import static java.net.HttpCookie.parse
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty
 import static org.springframework.http.HttpHeaders.COOKIE
 import static org.springframework.http.HttpMethod.DELETE
 import static org.springframework.http.HttpMethod.GET
@@ -239,7 +241,7 @@ abstract class BasicSpec extends Specification {
     }
 
     private static void failOnErrors(N1qlQueryResult result) {
-        if (!result.finalSuccess()) {
+        if (!result.finalSuccess() || isNotEmpty(result.errors())) {
             throw new RuntimeException(result.errors().toString())
         }
     }
