@@ -128,7 +128,6 @@ public class PersistentDao implements SessionDao {
         String statement = "UPSERT INTO " + bucket + " (KEY, VALUE) VALUES ($1, $2)";
         JsonObject json = create().put("sessionIds", document.getSessionIds());
         executeQuery(statement, from(document.getPrincipal(), json));
-        couchbaseTemplate.save(document);
     }
 
     @Override
