@@ -157,7 +157,7 @@ public class PersistentDao implements SessionDao {
     }
 
     protected void printAllDocs() {
-        N1qlQueryResult rows = couchbaseTemplate.queryN1QL(simple("SELECT * FROM " + bucket));
+        N1qlQueryResult rows = couchbaseTemplate.queryN1QL(simple("SELECT * FROM " + bucket, build().consistency(REQUEST_PLUS)));
         log.info("### all docs: {}", rows.allRows());
     }
 
