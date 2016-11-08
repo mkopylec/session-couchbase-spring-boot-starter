@@ -133,7 +133,7 @@ public class PersistentDao implements SessionDao {
     @Override
     public boolean exists(String documentId) {
         printAllDocs();
-        String statement = "SELECT * FROM " + bucket + " USE KEYS $1";
+        String statement = "SELECT COUNT(*) FROM " + bucket + " USE KEYS $1";
         N1qlQueryResult result = executeQuery(statement, from(documentId));
         return result.rows().hasNext();
     }
