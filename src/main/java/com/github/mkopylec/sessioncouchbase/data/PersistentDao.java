@@ -6,6 +6,7 @@ import com.couchbase.client.java.query.N1qlQueryResult;
 import com.couchbase.client.java.query.N1qlQueryRow;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.slf4j.Logger;
 import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.data.couchbase.core.CouchbaseQueryExecutionException;
@@ -20,9 +21,12 @@ import java.util.Set;
 
 import static com.couchbase.client.java.document.json.JsonArray.from;
 import static com.couchbase.client.java.query.N1qlQuery.parameterized;
+import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.util.Assert.isTrue;
 
 public class PersistentDao implements SessionDao {
+
+    private static final Logger log = getLogger(PersistentDao.class);
 
     protected final String bucket;
     protected final CouchbaseTemplate couchbaseTemplate;
@@ -132,7 +136,8 @@ public class PersistentDao implements SessionDao {
     @Override
     public void deleteAll() {
         String statement = "DELETE FROM " + bucket;
-        executeQuery(statement, from());
+        N1qlQueryResult arg = executeQuery(statement, from());
+        log.info("### Delete all. {} | {} | {}", arg.errors(), arg.finalSuccess(), arg.status());
     }
 
     protected N1qlQueryResult executeQuery(String statement, JsonArray parameters) {
