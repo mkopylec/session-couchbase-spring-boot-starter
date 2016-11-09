@@ -105,8 +105,7 @@ public class PersistentDao implements SessionDao {
         if (document == null) {
             return null;
         }
-        Map<String, Object> namespaces = document.toMap();
-        //TODO get("data")
+        Map<String, Object> namespaces = document.getObject("data").toMap();
         Map<String, Map<String, Object>> data = new HashMap<>(namespaces.size());
         namespaces.forEach((namespace, namespaceData) -> data.put(namespace, (Map<String, Object>) namespaceData));
         return new SessionDocument(id, data);
