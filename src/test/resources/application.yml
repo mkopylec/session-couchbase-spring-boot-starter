@@ -8,4 +8,6 @@ session-couchbase:
   in-memory:
     enabled: false
 
-logging.level.com.github.mkopylec.sessioncouchbase: trace
+logging.level:
+  com.github.mkopylec.sessioncouchbase: trace
+  com.couchbase: trace
