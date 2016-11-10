@@ -107,7 +107,7 @@ You can access session attributes in 2 ways, using:
  - _application namespace_ - attributes are visible only to instances of the same web application within a distributed system
  - _global namespace_ - attributes are visible to all instances of all web applications within a distributed system
  
-To access application namespace just pass an attribute name:
+To access application namespace attribute just pass an attribute name:
 
 ```java
 ...
@@ -120,7 +120,7 @@ public void doSomething(HttpSession session) {
 }
 ```
 
-To access global attributes create an attribute name using `CouchbaseSession.globalAttributeName(...)` method:
+To access global attribute create an attribute name using `CouchbaseSession.globalAttributeName(...)` method:
 
 ```java
 ...
