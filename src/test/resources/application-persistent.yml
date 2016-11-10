@@ -4,4 +4,3 @@ spring.couchbase:
     name: default
     password:
   env.timeouts.query: 20000
-
