@@ -4,9 +4,7 @@ import com.github.mkopylec.sessioncouchbase.BasicSpec
 import com.github.mkopylec.sessioncouchbase.Message
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.client.HttpServerErrorException
-import spock.lang.Ignore
 
-@Ignore
 @ActiveProfiles(['persistent', 'retryable-queries'])
 class PersistentConcurrentModificationsSpec extends BasicSpec {
 
