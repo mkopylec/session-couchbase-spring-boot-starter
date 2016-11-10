@@ -41,7 +41,7 @@ public class PersistentConfiguration {
     public RetryTemplate sessionCouchbaseRetryTemplate(RetryLoggingListener listener) {
         Map<Class<? extends Throwable>, Boolean> retryableExceptions = new HashMap<>(1);
         retryableExceptions.put(Exception.class, true);
-        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(sessionCouchbase.getRetry().getMaxAttempts(), retryableExceptions);
+        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(sessionCouchbase.getPersistent().getRetry().getMaxAttempts(), retryableExceptions);
         RetryTemplate retryTemplate = new RetryTemplate();
         retryTemplate.setRetryPolicy(retryPolicy);
         retryTemplate.registerListener(listener);
@@ -51,6 +51,6 @@ public class PersistentConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public SessionDao sessionDao(CouchbaseTemplate couchbaseTemplate, @Qualifier("sessionCouchbaseRetryTemplate") RetryTemplate retryTemplate) {
-        return new PersistentDao(couchbase, couchbaseTemplate, retryTemplate);
+        return new PersistentDao(couchbase, sessionCouchbase, couchbaseTemplate, retryTemplate);
     }
 }

@@ -4,6 +4,8 @@ import com.couchbase.client.java.document.json.JsonArray;
 import com.couchbase.client.java.document.json.JsonObject;
 import com.couchbase.client.java.query.N1qlQueryResult;
 import com.couchbase.client.java.query.N1qlQueryRow;
+import com.couchbase.client.java.query.consistency.ScanConsistency;
+import com.github.mkopylec.sessioncouchbase.configuration.SessionCouchbaseProperties;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties;
@@ -22,17 +24,18 @@ import static com.couchbase.client.java.document.json.JsonArray.from;
 import static com.couchbase.client.java.document.json.JsonObject.create;
 import static com.couchbase.client.java.query.N1qlParams.build;
 import static com.couchbase.client.java.query.N1qlQuery.parameterized;
-import static com.couchbase.client.java.query.consistency.ScanConsistency.REQUEST_PLUS;
 import static java.util.stream.Collectors.toList;
 
 public class PersistentDao implements SessionDao {
 
     protected final String bucket;
+    protected final ScanConsistency queryConsistency;
     protected final CouchbaseTemplate couchbaseTemplate;
     protected final RetryTemplate retryTemplate;
 
-    public PersistentDao(CouchbaseProperties couchbase, CouchbaseTemplate couchbaseTemplate, RetryTemplate retryTemplate) {
+    public PersistentDao(CouchbaseProperties couchbase, SessionCouchbaseProperties sessionCouchbase, CouchbaseTemplate couchbaseTemplate, RetryTemplate retryTemplate) {
         bucket = couchbase.getBucket().getName();
+        queryConsistency = sessionCouchbase.getPersistent().getQueryConsistency();
         this.couchbaseTemplate = couchbaseTemplate;
         this.retryTemplate = retryTemplate;
     }
@@ -174,15 +177,15 @@ public class PersistentDao implements SessionDao {
 
     protected N1qlQueryResult executeQuery(String statement, JsonArray parameters) {
         return retryTemplate.execute(context -> {
-            N1qlQueryResult result = couchbaseTemplate.queryN1QL(parameterized(statement, parameters, build().consistency(REQUEST_PLUS)));
-            if (isQueryFailed(result)) {
+            N1qlQueryResult result = couchbaseTemplate.queryN1QL(parameterized(statement, parameters, build().consistency(queryConsistency)));
+            if (hasQueryFailed(result)) {
                 throw new CouchbaseQueryExecutionException("Error executing N1QL statement '" + statement + "'. " + result.errors());
             }
             return result;
         });
     }
 
-    protected boolean isQueryFailed(N1qlQueryResult result) {
+    protected boolean hasQueryFailed(N1qlQueryResult result) {
         return !result.finalSuccess() || CollectionUtils.isNotEmpty(result.errors());
     }
 

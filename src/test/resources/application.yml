@@ -1,10 +1,7 @@
 session-couchbase:
-  timeout-in-seconds: 1800
   application-namespace: test-application
   principal-sessions:
     enabled: false
-  retry:
-    max-attempts: 1
   in-memory:
     enabled: false
 

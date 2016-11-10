@@ -1,7 +1,10 @@
 package com.github.mkopylec.sessioncouchbase.configuration;
 
+import com.couchbase.client.java.query.consistency.ScanConsistency;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
+
+import static com.couchbase.client.java.query.consistency.ScanConsistency.REQUEST_PLUS;
 
 /**
  * Session couchbase configuration properties.
@@ -23,10 +26,10 @@ public class SessionCouchbaseProperties {
     @NestedConfigurationProperty
     private PrincipalSessions principalSessions = new PrincipalSessions();
     /**
-     * Properties responsible for retrying Couchbase query when an error occurs.
+     * Properties responsible for persistent mode behaviour.
      */
     @NestedConfigurationProperty
-    private Retry retry = new Retry();
+    private Persistent persistent = new Persistent();
     /**
      * Properties responsible for in-memory mode behaviour.
      */
@@ -57,12 +60,12 @@ public class SessionCouchbaseProperties {
         this.principalSessions = principalSessions;
     }
 
-    public Retry getRetry() {
-        return retry;
+    public Persistent getPersistent() {
+        return persistent;
     }
 
-    public void setRetry(Retry retry) {
-        this.retry = retry;
+    public void setPersistent(Persistent persistent) {
+        this.persistent = persistent;
     }
 
     public InMemory getInMemory() {
@@ -89,19 +92,48 @@ public class SessionCouchbaseProperties {
         }
     }
 
-    public static class Retry {
+    public static class Persistent {
 
         /**
-         * Maximum number of attempts to repeat a query to Couchbase when error occurs.
+         * N1QL query scan consistency.
          */
-        private int maxAttempts = 1;
+        private ScanConsistency queryConsistency = REQUEST_PLUS;
+        /**
+         * Properties responsible for retrying Couchbase query when an error occurs.
+         */
+        @NestedConfigurationProperty
+        private Retry retry = new Retry();
 
-        public int getMaxAttempts() {
-            return maxAttempts;
+        public ScanConsistency getQueryConsistency() {
+            return queryConsistency;
         }
 
-        public void setMaxAttempts(int maxAttempts) {
-            this.maxAttempts = maxAttempts;
+        public void setQueryConsistency(ScanConsistency queryConsistency) {
+            this.queryConsistency = queryConsistency;
+        }
+
+        public Retry getRetry() {
+            return retry;
+        }
+
+        public void setRetry(Retry retry) {
+            this.retry = retry;
+        }
+
+        public static class Retry {
+
+            /**
+             * Maximum number of attempts to repeat a query to Couchbase when error occurs.
+             */
+            private int maxAttempts = 1;
+
+            public int getMaxAttempts() {
+                return maxAttempts;
+            }
+
+            public void setMaxAttempts(int maxAttempts) {
+                this.maxAttempts = maxAttempts;
+            }
         }
     }
 
