@@ -5,19 +5,16 @@ import com.github.mkopylec.sessioncouchbase.configuration.SessionCouchbaseProper
 import com.github.mkopylec.sessioncouchbase.data.SessionDao
 import com.github.mkopylec.sessioncouchbase.utils.ApplicationInstance
 import com.github.mkopylec.sessioncouchbase.utils.ApplicationInstanceRunner
-import org.apache.commons.collections4.CollectionUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties
 import org.springframework.boot.context.embedded.EmbeddedWebApplicationContext
-import org.springframework.boot.test.SpringApplicationContextLoader
-import org.springframework.boot.test.WebIntegrationTest
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.core.env.Environment
 import org.springframework.data.couchbase.core.CouchbaseTemplate
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
-import org.springframework.test.context.ContextConfiguration
 import org.springframework.web.client.RestTemplate
 import spock.lang.Shared
 import spock.lang.Specification
@@ -26,13 +23,13 @@ import static com.couchbase.client.java.query.N1qlQuery.simple
 import static com.github.mkopylec.sessioncouchbase.SessionController.PRINCIPAL_NAME
 import static java.net.HttpCookie.parse
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import static org.springframework.http.HttpHeaders.COOKIE
 import static org.springframework.http.HttpMethod.DELETE
 import static org.springframework.http.HttpMethod.GET
 import static org.springframework.http.HttpMethod.PUT
 
-@WebIntegrationTest(randomPort = true)
-@ContextConfiguration(loader = SpringApplicationContextLoader, classes = TestApplication)
+@SpringBootTest(webEnvironment = RANDOM_PORT)
 abstract class BasicSpec extends Specification {
 
     private static boolean bucketIndexCreated = false
