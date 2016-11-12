@@ -111,7 +111,7 @@ To access application namespace attribute just pass an attribute name:
 
 ```java
 ...
-@RequestMapping("uri")
+@GetMapping("uri")
 public void doSomething(HttpSession session) {
     String attributeName = "name";
     session.setAttribute(attributeName, "value");
@@ -124,7 +124,7 @@ To access global attribute create an attribute name using `CouchbaseSession.glob
 
 ```java
 ...
-@RequestMapping("uri")
+@GetMapping("uri")
 public void doSomething(HttpSession session) {
     String attributeName = CouchbaseSession.globalAttributeName("name");
     session.setAttribute(attributeName, "value");
