@@ -144,15 +144,8 @@ public class PersistentDao implements SessionDao {
 
     @Override
     public void delete(String id) {
-//        try {
         String statement = "DELETE FROM " + bucket + " USE KEYS $1";
         executeQuery(statement, from(id));
-//        } catch (CouchbaseQueryExecutionException ex) {
-//            if (!(ex.getCause() instanceof DocumentDoesNotExistException)) {
-//                throw ex;
-//            }
-//            //Do nothing
-//        }
     }
 
     @Override
