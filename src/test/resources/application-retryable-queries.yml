@@ -1,0 +1,4 @@
+session-couchbase:
+  persistent:
+    retry:
+      max-attempts: 10

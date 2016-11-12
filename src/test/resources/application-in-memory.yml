@@ -1,0 +1,3 @@
+session-couchbase:
+  in-memory:
+    enabled: true

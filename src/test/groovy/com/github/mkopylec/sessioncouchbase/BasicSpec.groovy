@@ -1,50 +1,66 @@
 package com.github.mkopylec.sessioncouchbase
 
 import com.couchbase.client.java.query.N1qlQueryResult
+import com.github.mkopylec.sessioncouchbase.configuration.SessionCouchbaseProperties
+import com.github.mkopylec.sessioncouchbase.data.SessionDao
 import com.github.mkopylec.sessioncouchbase.utils.ApplicationInstance
 import com.github.mkopylec.sessioncouchbase.utils.ApplicationInstanceRunner
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties
 import org.springframework.boot.context.embedded.EmbeddedWebApplicationContext
-import org.springframework.boot.test.SpringApplicationContextLoader
-import org.springframework.boot.test.WebIntegrationTest
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.core.env.Environment
 import org.springframework.data.couchbase.core.CouchbaseTemplate
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
-import org.springframework.test.context.ContextConfiguration
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.web.client.RestTemplate
 import spock.lang.Shared
 import spock.lang.Specification
 
 import static com.couchbase.client.java.query.N1qlQuery.simple
+import static com.github.mkopylec.sessioncouchbase.SessionController.PRINCIPAL_NAME
 import static java.net.HttpCookie.parse
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import static org.springframework.http.HttpHeaders.COOKIE
 import static org.springframework.http.HttpMethod.DELETE
 import static org.springframework.http.HttpMethod.GET
 import static org.springframework.http.HttpMethod.PUT
 
-@WebIntegrationTest(randomPort = true)
-@ContextConfiguration(loader = SpringApplicationContextLoader, classes = TestApplication)
+@SpringBootTest(webEnvironment = RANDOM_PORT)
 abstract class BasicSpec extends Specification {
 
     private static boolean bucketIndexCreated = false
 
     @Shared
     private RestTemplate rest = new RestTemplate()
+    @Shared
+    private ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor()
+    @Autowired
+    private Environment environment
     @Autowired(required = false)
-    private CouchbaseTemplate couchbase
+    private CouchbaseTemplate template
+    @Autowired
+    private SessionDao sessionDao
+    @Autowired
+    private SessionEventConsumer eventConsumer
     @Autowired
     private EmbeddedWebApplicationContext context
     private int extraInstancePort
     private ApplicationInstance instance
+    @Autowired
+    private CouchbaseProperties couchbase
     @Autowired
     private SessionCouchbaseProperties sessionCouchbase
     // Cannot store cookie in thread local because some tests starts more than one app instance. CANNOT run tests in parallel.
     private String currentSessionCookie
 
     void setup() {
+        clearEventsAssertions()
         createBucketIndex()
-        clearBucket()
+        clearSessions()
     }
 
     void cleanup() {
@@ -52,14 +68,14 @@ abstract class BasicSpec extends Specification {
         stopExtraApplicationInstance()
     }
 
-    protected void startExtraApplicationInstance(String namespace = sessionCouchbase.persistent.namespace) {
+    protected void startExtraApplicationInstance(String... activeProfiles) {
         URL[] urls = [new File('/build/classes/test').toURI().toURL()]
         def classLoader = new URLClassLoader(urls, getClass().classLoader)
         def runnerClass = classLoader.loadClass(ApplicationInstanceRunner.class.name)
         def runnerInstance = runnerClass.newInstance()
         instance = new ApplicationInstance(runnerClass, runnerInstance)
-        runnerClass.getMethod('setNamespace', String).invoke(runnerInstance, namespace)
-        runnerClass.getMethod('setPrincipalSessionsEnabled', boolean).invoke(runnerInstance, sessionCouchbase.persistent.principalSessions.enabled)
+        def profiles = activeProfiles ? activeProfiles + environment.activeProfiles : environment.activeProfiles
+        runnerClass.getMethod('setActiveProfiles', String).invoke(runnerInstance, profiles.join(','))
         runnerClass.getMethod('run').invoke(runnerInstance)
         extraInstancePort = runnerClass.getMethod('getPort').invoke(runnerInstance) as int
     }
@@ -72,15 +88,39 @@ abstract class BasicSpec extends Specification {
     }
 
     protected boolean currentSessionExists() {
-        return couchbase.exists(getCurrentSessionId())
+        return sessionDao.exists(getCurrentSessionId())
+    }
+
+    protected boolean currentPrincipalSessionsExists() {
+        return sessionDao.exists(PRINCIPAL_NAME)
     }
 
     protected int getSessionTimeout() {
         return sessionCouchbase.timeoutInSeconds * 1000
     }
 
+    protected void executeConcurrently(Closure operation) {
+        initExecutor()
+        def futures = []
+        for (int i = 0; i < 100; i++) {
+            def future = executor.submit(new Runnable() {
+
+                @Override
+                void run() {
+                    operation()
+                }
+            })
+            futures.add(future)
+        }
+        futures.each { it -> it.get() }
+    }
+
     protected void setSessionAttribute(Message attribute) {
         post('session/attribute', attribute, getPort())
+    }
+
+    protected void setSecondSessionAttribute(Message attribute) {
+        post('session/attribute/second', attribute, getPort())
     }
 
     protected void setGlobalSessionAttribute(Message attribute) {
@@ -99,12 +139,24 @@ abstract class BasicSpec extends Specification {
         delete('session/attribute/global', getPort())
     }
 
+    protected void setAndRemoveSessionAttribute(Message attribute) {
+        put('session/attribute', getPort(), attribute)
+    }
+
     protected ResponseEntity<Message> getSessionAttribute() {
         return get('session/attribute', Message, getPort())
     }
 
+    protected ResponseEntity<Message> getSecondSessionAttribute() {
+        return get('session/attribute/second', Message, getPort())
+    }
+
     protected ResponseEntity<Message> getSessionAttributeFromExtraInstance() {
         return get('session/attribute', Message, extraInstancePort)
+    }
+
+    protected ResponseEntity<Message> getGlobalSessionAttribute() {
+        return get('session/attribute/global', Message, getPort())
     }
 
     protected ResponseEntity<Message> getGlobalSessionAttributeFromExtraInstance() {
@@ -147,27 +199,46 @@ abstract class BasicSpec extends Specification {
         currentSessionCookie = null
     }
 
-    protected void clearBucket() {
-        if (couchbase) {
-            def result = couchbase.queryN1QL(simple("DELETE FROM $sessionCouchbase.persistent.couchbase.bucketName"))
-            failOnErrors(result)
-        }
+    protected void clearSessions() {
+        sessionDao.deleteAll()
+    }
+
+    protected boolean sessionCreatedEventSent() {
+        return eventConsumer.sessionCreated
+    }
+
+    protected boolean sessionExpiredEventSent() {
+        return eventConsumer.sessionExpired
+    }
+
+    protected boolean sessionDeletedEventSent() {
+        return eventConsumer.sessionDeleted
     }
 
     private void createBucketIndex() {
-        if (!bucketIndexCreated && couchbase) {
-            def result = couchbase.queryN1QL(simple('SELECT * FROM system:indexes'))
+        if (!bucketIndexCreated && template) {
+            def result = template.queryN1QL(simple('SELECT * FROM system:indexes'))
             failOnErrors(result)
             if (result.allRows().empty) {
-                result = couchbase.queryN1QL(simple("CREATE PRIMARY INDEX ON $sessionCouchbase.persistent.couchbase.bucketName USING GSI"))
+                result = template.queryN1QL(simple("CREATE PRIMARY INDEX ON $couchbase.bucket.name USING GSI"))
                 failOnErrors(result)
             }
             bucketIndexCreated = true
         }
     }
 
+    private void clearEventsAssertions() {
+        eventConsumer.resetAssertions()
+    }
+
+    private void initExecutor() {
+        executor.queueCapacity = 1
+        executor.corePoolSize = 200
+        executor.initialize()
+    }
+
     private static void failOnErrors(N1qlQueryResult result) {
-        if (!result.finalSuccess()) {
+        if (!result.finalSuccess() || isNotEmpty(result.errors())) {
             throw new RuntimeException(result.errors().toString())
         }
     }
@@ -202,13 +273,12 @@ abstract class BasicSpec extends Specification {
         saveSessionCookie(response)
     }
 
-    private ResponseEntity<Object> put(String path, int port = getPort()) {
+    private void put(String path, int port = getPort(), Object body = null) {
         def url = createUrl(path, port)
         HttpHeaders headers = addSessionCookie()
-        def request = new HttpEntity<>(headers)
+        def request = new HttpEntity<>(body, headers)
         def response = rest.exchange(url, PUT, request, Object)
         saveSessionCookie(response)
-        return response
     }
 
     private static GString createUrl(String path, int port) {
@@ -226,9 +296,17 @@ abstract class BasicSpec extends Specification {
     }
 
     private void saveSessionCookie(ResponseEntity response) {
-        def cookie = response.headers.get('Set-Cookie')
+        def cookiesHeader = response.headers.get('Set-Cookie')
+        if (cookiesHeader == null) {
+            return
+        }
+        def cookieHeader = cookiesHeader.find { it -> it.contains('SESSION') }
+        if (cookieHeader == null) {
+            return
+        }
+        def cookie = parse(cookieHeader)[0]
         if (cookie != null) {
-            currentSessionCookie = cookie
+            currentSessionCookie = cookie.toString()
         }
     }
 }
