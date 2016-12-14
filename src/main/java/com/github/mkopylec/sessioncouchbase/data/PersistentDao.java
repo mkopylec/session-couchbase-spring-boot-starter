@@ -82,7 +82,7 @@ public class PersistentDao implements SessionDao {
 
     @Override
     public Map<String, Object> findSessionAttributes(String id, String namespace) {
-        String statement = "SELECT * FROM " + bucket + ".data.`" + namespace + "` USE KEYS $1";
+        String statement = "SELECT data.`" + namespace + "` FROM " + bucket + " USE KEYS $1";
         N1qlQueryResult result = executeQuery(statement, from(id));
         JsonObject document = getDocument(namespace, result);
         if (document == null) {
