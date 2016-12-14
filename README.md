@@ -146,7 +146,7 @@ session-couchbase:
     persistent:
         query-consistency: REQUEST_PLUS # N1QL query scan consistency.
         retry:
-            max-attempts: 1 # Maximum number of attempts to repeat a query to Couchbase when error occurs.
+            max-attempts: 1 # Maximum number of attempts to repeat a query to Couchbase when an error occurs.
     in-memory:
         enabled: false # Flag for enabling and disabling in-memory mode.
 ```
