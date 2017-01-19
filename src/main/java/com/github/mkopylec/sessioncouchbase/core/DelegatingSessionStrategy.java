@@ -14,13 +14,11 @@ public class DelegatingSessionStrategy implements MultiHttpSessionStrategy {
     protected final CookieHttpSessionStrategy sessionStrategy;
     protected final SessionDao dao;
     protected final String namespace;
-    protected final Serializer serializer;
 
-    public DelegatingSessionStrategy(CookieHttpSessionStrategy sessionStrategy, SessionDao dao, SessionCouchbaseProperties sessionCouchbase, Serializer serializer) {
+    public DelegatingSessionStrategy(CookieHttpSessionStrategy sessionStrategy, SessionDao dao, SessionCouchbaseProperties sessionCouchbase) {
         this.sessionStrategy = sessionStrategy;
         this.dao = dao;
         namespace = sessionCouchbase.getApplicationNamespace();
-        this.serializer = serializer;
     }
 
     @Override
@@ -40,7 +38,7 @@ public class DelegatingSessionStrategy implements MultiHttpSessionStrategy {
 
     @Override
     public HttpServletRequest wrapRequest(HttpServletRequest request, HttpServletResponse response) {
-        RequestWrapper wrapper = new RequestWrapper(request, dao, namespace, serializer);
+        RequestWrapper wrapper = new RequestWrapper(request, dao, namespace);
         return sessionStrategy.wrapRequest(wrapper, response);
     }
 

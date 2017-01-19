@@ -12,7 +12,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.config.annotation.web.http.EnableSpringHttpSession;
 import org.springframework.session.web.http.CookieHttpSessionStrategy;
@@ -20,7 +19,6 @@ import org.springframework.session.web.http.MultiHttpSessionStrategy;
 
 @Configuration
 @EnableSpringHttpSession
-@Import({PersistentConfiguration.class, InMemoryConfiguration.class})
 @EnableConfigurationProperties(CouchbaseProperties.class)
 public class SessionCouchbaseAutoConfiguration {
 
@@ -29,8 +27,8 @@ public class SessionCouchbaseAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public MultiHttpSessionStrategy multiHttpSessionStrategy(SessionDao dao, Serializer serializer) {
-        return new DelegatingSessionStrategy(new CookieHttpSessionStrategy(), dao, sessionCouchbase, serializer);
+    public MultiHttpSessionStrategy multiHttpSessionStrategy(SessionDao dao) {
+        return new DelegatingSessionStrategy(new CookieHttpSessionStrategy(), dao, sessionCouchbase);
     }
 
     @Bean
