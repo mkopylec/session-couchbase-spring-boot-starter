@@ -42,13 +42,13 @@ public class PersistentDao implements SessionDao {
 
     @Override
     public void insertNamespace(String namespace, String id) {
-        String statement = "UPDATE " + bucket + " USE KEYS $1 SET data.`" + namespace + "` = {}";
+        String statement = "UPDATE `" + bucket + "` USE KEYS $1 SET data.`" + namespace + "` = {}";
         executeQuery(statement, from(id, namespace));
     }
 
     @Override
     public void updateSession(Map<String, Object> attributesToUpdate, Set<String> attributesToRemove, String namespace, String id) {
-        StringBuilder statement = new StringBuilder("UPDATE ").append(bucket).append(" USE KEYS $1");
+        StringBuilder statement = new StringBuilder("UPDATE `").append(bucket).append("` USE KEYS $1");
         List<Object> parameters = new ArrayList<>(attributesToUpdate.size() + attributesToRemove.size() + 1);
         parameters.add(id);
         int parameterIndex = 2;
@@ -70,19 +70,19 @@ public class PersistentDao implements SessionDao {
 
     @Override
     public void updatePutPrincipalSession(String principal, String sessionId) {
-        String statement = "UPDATE " + bucket + " USE KEYS $1 SET sessionIds = ARRAY_PUT(sessionIds, $2)";
+        String statement = "UPDATE `" + bucket + "` USE KEYS $1 SET sessionIds = ARRAY_PUT(sessionIds, $2)";
         executeQuery(statement, from(principal, sessionId));
     }
 
     @Override
     public void updateRemovePrincipalSession(String principal, String sessionId) {
-        String statement = "UPDATE " + bucket + " USE KEYS $1 SET sessionIds = ARRAY_REMOVE(sessionIds, $2)";
+        String statement = "UPDATE `" + bucket + "` USE KEYS $1 SET sessionIds = ARRAY_REMOVE(sessionIds, $2)";
         executeQuery(statement, from(principal, sessionId));
     }
 
     @Override
     public Map<String, Object> findSessionAttributes(String id, String namespace) {
-        String statement = "SELECT data.`" + namespace + "` FROM " + bucket + " USE KEYS $1";
+        String statement = "SELECT data.`" + namespace + "` FROM `" + bucket + "` USE KEYS $1";
         N1qlQueryResult result = executeQuery(statement, from(id));
         JsonObject document = getDocument(namespace, result);
         if (document == null) {
@@ -123,39 +123,39 @@ public class PersistentDao implements SessionDao {
 
     @Override
     public void save(SessionDocument document) {
-        String statement = "UPSERT INTO " + bucket + " (KEY, VALUE) VALUES ($1, $2)";
+        String statement = "UPSERT INTO `" + bucket + "` (KEY, VALUE) VALUES ($1, $2)";
         JsonObject json = create().put("data", document.getData());
         executeQuery(statement, from(document.getId(), json));
     }
 
     @Override
     public void save(PrincipalSessionsDocument document) {
-        String statement = "UPSERT INTO " + bucket + " (KEY, VALUE) VALUES ($1, $2)";
+        String statement = "UPSERT INTO `" + bucket + "` (KEY, VALUE) VALUES ($1, $2)";
         JsonObject json = create().put("sessionIds", document.getSessionIds());
         executeQuery(statement, from(document.getPrincipal(), json));
     }
 
     @Override
     public boolean exists(String documentId) {
-        String statement = "SELECT * FROM " + bucket + " USE KEYS $1";
+        String statement = "SELECT * FROM `" + bucket + "` USE KEYS $1";
         N1qlQueryResult result = executeQuery(statement, from(documentId));
         return result.rows().hasNext();
     }
 
     @Override
     public void delete(String id) {
-        String statement = "DELETE FROM " + bucket + " USE KEYS $1";
+        String statement = "DELETE FROM `" + bucket + "` USE KEYS $1";
         executeQuery(statement, from(id));
     }
 
     @Override
     public void deleteAll() {
-        String statement = "DELETE FROM " + bucket;
+        String statement = "DELETE FROM `" + bucket + "`";
         executeQuery(statement, from());
     }
 
     protected JsonObject findByDocumentKey(String key) {
-        String statement = "SELECT * FROM " + bucket + " USE KEYS $1";
+        String statement = "SELECT * FROM `" + bucket + "` USE KEYS $1";
         N1qlQueryResult result = executeQuery(statement, from(key));
         return getDocument(bucket, result);
     }
