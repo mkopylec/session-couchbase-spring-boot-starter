@@ -1,2 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.github.mkopylec.sessioncouchbase.configuration.InMemoryConfiguration,\
+com.github.mkopylec.sessioncouchbase.configuration.PersistentConfiguration,\
 com.github.mkopylec.sessioncouchbase.configuration.SessionCouchbaseAutoConfiguration
