@@ -29,8 +29,8 @@ public class SessionCouchbaseAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public MultiHttpSessionStrategy multiHttpSessionStrategy(SessionDao dao, Serializer serializer) {
-        return new DelegatingSessionStrategy(new CookieHttpSessionStrategy(), dao, sessionCouchbase, serializer);
+    public MultiHttpSessionStrategy multiHttpSessionStrategy(SessionDao dao) {
+        return new DelegatingSessionStrategy(new CookieHttpSessionStrategy(), dao, sessionCouchbase);
     }
 
     @Bean
