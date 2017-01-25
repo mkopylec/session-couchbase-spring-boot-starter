@@ -19,7 +19,7 @@ public class SessionCouchbaseProperties {
     /**
      * HTTP session application namespace under which session data must be stored.
      */
-    private String applicationNamespace;
+    private String applicationNamespace = "default";
     /**
      * Properties responsible for managing principal HTTP sessions.
      */

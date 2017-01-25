@@ -1,6 +1,5 @@
 package com.github.mkopylec.sessioncouchbase.core;
 
-import com.github.mkopylec.sessioncouchbase.configuration.SessionCouchbaseProperties;
 import com.github.mkopylec.sessioncouchbase.data.SessionDao;
 import org.springframework.session.Session;
 import org.springframework.session.web.http.CookieHttpSessionStrategy;
@@ -13,12 +12,10 @@ public class DelegatingSessionStrategy implements MultiHttpSessionStrategy {
 
     protected final CookieHttpSessionStrategy sessionStrategy;
     protected final SessionDao dao;
-    protected final String namespace;
 
-    public DelegatingSessionStrategy(CookieHttpSessionStrategy sessionStrategy, SessionDao dao, SessionCouchbaseProperties sessionCouchbase) {
+    public DelegatingSessionStrategy(CookieHttpSessionStrategy sessionStrategy, SessionDao dao) {
         this.sessionStrategy = sessionStrategy;
         this.dao = dao;
-        namespace = sessionCouchbase.getApplicationNamespace();
     }
 
     @Override
@@ -38,7 +35,7 @@ public class DelegatingSessionStrategy implements MultiHttpSessionStrategy {
 
     @Override
     public HttpServletRequest wrapRequest(HttpServletRequest request, HttpServletResponse response) {
-        RequestWrapper wrapper = new RequestWrapper(request, dao, namespace);
+        RequestWrapper wrapper = new RequestWrapper(request, dao);
         return sessionStrategy.wrapRequest(wrapper, response);
     }
 

@@ -22,18 +22,16 @@ public class RequestWrapper extends HttpServletRequestWrapper {
     private static final Logger log = getLogger(RequestWrapper.class);
 
     protected final SessionDao dao;
-    protected final String namespace;
 
-    public RequestWrapper(HttpServletRequest request, SessionDao dao, String namespace) {
+    public RequestWrapper(HttpServletRequest request, SessionDao dao) {
         super(request);
         this.dao = dao;
-        this.namespace = namespace;
     }
 
     @Override
     public String changeSessionId() {
         SessionDocument oldDocument = dao.findById(getRequestedSessionId());
-        notNull(oldDocument, "Cannot change HTTP session ID, because Couchbase document with ID '" + getRequestedSessionId() + "' does not exist");
+        notNull(oldDocument, "Cannot change HTTP session ID, because session document with ID '" + getRequestedSessionId() + "' does not exist in data storage");
         HttpSession oldSession = getSession(false);
         notNull(oldSession, "Cannot change HTTP session ID, because session with ID '" + getRequestedSessionId() + "' does not exist");
 

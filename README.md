@@ -38,13 +38,6 @@ public class Application {
 }
 ```
 
-Set an HTTP session application [namespace](#namespaces) in _application.yml_ file:
-
-```yaml
-session-couchbase:
-    application-namespace: <application_namespace>
-```
-
 Simply use `HttpSession` interface to control HTTP session. For example:
 
 ```java
@@ -101,6 +94,13 @@ The mode is useful for integration tests when you don't want to communicate with
 
 ## Namespaces
 The starter supports HTTP session namespaces.
+The name of the namespace can be set in _application.yml_ file:
+
+```yaml
+session-couchbase:
+    application-namespace: <application_namespace>
+```
+
 Each web application in a distributed system has one application namespace under which the session attributes are stored.
 Every web application can also access global session attributes which are visible across the whole distributed system.
 Namespaces prevent conflicts in attributes names between different web applications in the system.
