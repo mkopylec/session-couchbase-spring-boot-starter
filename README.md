@@ -144,7 +144,7 @@ When changing HTTP session ID every attribute is copied to the new session, no m
 ```yaml
 session-couchbase:
     timeout-in-seconds: 1800 # HTTP session timeout.
-    application-namespace: # HTTP session application namespace under which session data must be stored.
+    application-namespace: default # HTTP session application namespace under which session data must be stored.
     principal-sessions:
         enabled: false # Flag for enabling and disabling finding HTTP sessions by principal. Can significantly decrease application performance when enabled.
     persistent:
