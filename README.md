@@ -38,6 +38,13 @@ public class Application {
 }
 ```
 
+Set an HTTP session application [namespace](https://github.com/mkopylec/session-couchbase-spring-boot-starter#namespaces) in _application.yml_ file:
+
+```yaml
+session-couchbase:
+    application-namespace: <application_namespace>
+```
+
 Simply use `HttpSession` interface to control HTTP session. For example:
 
 ```java
@@ -54,12 +61,9 @@ public class SessionController {
 The starter can be used in 2 different modes:
 
 ### Couchbase backed persistence usage
-Configure Couchbase connection in _application.yml_ file using Session Couchbase and Spring Data Couchbase properties:
+Configure Couchbase connection in _application.yml_ file using Spring Data Couchbase properties:
 
 ```yaml
-session-couchbase:
-    application-namespace: <application_namespace>
-
 spring.couchbase:
   bootstrap-hosts: <list_of_couchbase_cluster_hosts>
   bucket:
