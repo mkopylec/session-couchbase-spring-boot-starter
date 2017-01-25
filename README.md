@@ -38,7 +38,7 @@ public class Application {
 }
 ```
 
-Set an HTTP session application [namespace](https://github.com/mkopylec/session-couchbase-spring-boot-starter#namespaces) in _application.yml_ file:
+Set an HTTP session application [namespace](#namespaces) in _application.yml_ file:
 
 ```yaml
 session-couchbase:
