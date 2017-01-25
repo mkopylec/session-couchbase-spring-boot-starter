@@ -39,11 +39,6 @@ public class SessionController {
         session.setAttribute(SESSION_ATTRIBUTE_NAME, dto);
     }
 
-    @PostMapping("attribute/second")
-    public void setSecondAttribute(@RequestBody Message dto, HttpSession session) {
-        session.setAttribute(SECOND_SESSION_ATTRIBUTE_NAME, dto);
-    }
-
     @PostMapping("attribute/global")
     public void setGlobalAttribute(@RequestBody Message dto, HttpSession session) {
         session.setAttribute(globalAttributeName(SESSION_ATTRIBUTE_NAME), dto);

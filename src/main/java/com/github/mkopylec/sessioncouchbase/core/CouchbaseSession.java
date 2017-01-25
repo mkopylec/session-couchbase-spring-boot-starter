@@ -64,12 +64,12 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
 
     @Override
     public long getCreationTime() {
-        return ((Number) globalAttributes.get(CREATION_TIME_ATTRIBUTE)).longValue();
+        return getNumericGlobalAttributeValue(CREATION_TIME_ATTRIBUTE);
     }
 
     @Override
     public long getLastAccessedTime() {
-        return ((Number) globalAttributes.get(LAST_ACCESSED_TIME_ATTRIBUTE)).longValue();
+        return getNumericGlobalAttributeValue(LAST_ACCESSED_TIME_ATTRIBUTE);
     }
 
     public void setLastAccessedTime(long lastAccessedTime) {
@@ -237,5 +237,9 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
 
     protected boolean containsPrincipalAttribute() {
         return globalAttributes.containsKey(PRINCIPAL_NAME_INDEX_NAME) || namespaceAttributes.containsKey(PRINCIPAL_NAME_INDEX_NAME);
+    }
+
+    protected long getNumericGlobalAttributeValue(String attributeName) {
+        return ((Number) globalAttributes.get(attributeName)).longValue();
     }
 }

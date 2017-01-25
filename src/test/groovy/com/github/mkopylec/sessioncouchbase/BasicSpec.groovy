@@ -119,10 +119,6 @@ abstract class BasicSpec extends Specification {
         post('session/attribute', attribute, getPort())
     }
 
-    protected void setSecondSessionAttribute(Message attribute) {
-        post('session/attribute/second', attribute, getPort())
-    }
-
     protected void setGlobalSessionAttribute(Message attribute) {
         post('session/attribute/global', attribute, getPort())
     }
