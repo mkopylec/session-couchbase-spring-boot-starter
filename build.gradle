@@ -141,3 +141,7 @@ jacocoTestReport {
         html.enabled = true
     }
 }
+
+nexusStaging {
+    numberOfRetries = 20
+}
