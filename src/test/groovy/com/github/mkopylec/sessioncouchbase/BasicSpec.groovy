@@ -50,7 +50,7 @@ abstract class BasicSpec extends Specification {
     private EmbeddedWebApplicationContext context
     private int extraInstancePort
     private ApplicationInstance instance
-    @Autowired
+    @Autowired(required = false)
     private CouchbaseProperties couchbase
     @Autowired
     private SessionCouchbaseProperties sessionCouchbase
@@ -212,7 +212,7 @@ abstract class BasicSpec extends Specification {
     }
 
     private void createBucketIndex() {
-        if (!bucketIndexCreated && template) {
+        if (!bucketIndexCreated && template && couchbase) {
             def result = template.queryN1QL(simple('SELECT * FROM system:indexes'))
             failOnErrors(result)
             if (result.allRows().empty) {
