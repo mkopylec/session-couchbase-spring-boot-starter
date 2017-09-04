@@ -110,11 +110,15 @@ public class InMemoryDao implements SessionDao, InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         expirationScheduler.initialize();
-        expirationScheduler.scheduleAtFixedRate(() -> expirationTimes.forEach((documentId, expirationTime) -> {
-            if (expirationTime < currentTimeMillis()) {
-                sessions.remove(documentId);
-                principalSessions.remove(documentId);
+        expirationScheduler.scheduleAtFixedRate(() -> {
+            for(Iterator<Entry<String, Long>> iter = expirationTimes.entrySet().iterator(); iter.hasNext(); ) {
+                Entry<String, Long> entry = iter.next();
+                if (entry.getValue() < currentTimeMillis()) {
+                    sessions.remove(entry.getKey());
+                    principalSessions.remove(entry.getKey());
+                    iter.remove();
+                }
             }
-        }), 1000);
+        }, 1000);
     }
 }
