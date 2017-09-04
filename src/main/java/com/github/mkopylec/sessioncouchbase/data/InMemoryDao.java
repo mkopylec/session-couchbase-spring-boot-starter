@@ -98,6 +98,7 @@ public class InMemoryDao implements SessionDao, InitializingBean {
 
     @Override
     public void delete(String id) {
+        expirationTimes.remove(id);
         sessions.remove(id);
         principalSessions.remove(id);
     }
@@ -113,12 +114,13 @@ public class InMemoryDao implements SessionDao, InitializingBean {
     public void afterPropertiesSet() throws Exception {
         expirationScheduler.initialize();
         expirationScheduler.scheduleAtFixedRate(() -> {
-            for(Iterator<Entry<String, Long>> iter = expirationTimes.entrySet().iterator(); iter.hasNext(); ) {
-                Entry<String, Long> entry = iter.next();
+            Iterator<Entry<String, Long>> iterator = expirationTimes.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Entry<String, Long> entry = iterator.next();
                 if (entry.getValue() < currentTimeMillis()) {
                     sessions.remove(entry.getKey());
                     principalSessions.remove(entry.getKey());
-                    iter.remove();
+                    iterator.remove();
                 }
             }
         }, 1000);

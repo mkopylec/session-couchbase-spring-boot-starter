@@ -7,7 +7,6 @@ import com.github.mkopylec.sessioncouchbase.core.Serializer;
 import com.github.mkopylec.sessioncouchbase.data.SessionDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
@@ -19,7 +18,7 @@ import org.springframework.session.web.http.MultiHttpSessionStrategy;
 
 @Configuration
 @EnableSpringHttpSession
-@EnableConfigurationProperties(CouchbaseProperties.class)
+@EnableConfigurationProperties(SessionCouchbaseProperties.class)
 public class SessionCouchbaseAutoConfiguration {
 
     @Autowired
