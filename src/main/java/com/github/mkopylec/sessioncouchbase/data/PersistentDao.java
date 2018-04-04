@@ -33,8 +33,8 @@ public class PersistentDao implements SessionDao {
     protected final CouchbaseTemplate couchbaseTemplate;
     protected final RetryTemplate retryTemplate;
 
-    public PersistentDao(CouchbaseProperties couchbase, SessionCouchbaseProperties sessionCouchbase, CouchbaseTemplate couchbaseTemplate, RetryTemplate retryTemplate) {
-        bucket = couchbase.getBucket().getName();
+    public PersistentDao(SessionCouchbaseProperties sessionCouchbase, CouchbaseTemplate couchbaseTemplate, RetryTemplate retryTemplate) {
+        bucket = couchbaseTemplate.getCouchbaseBucket().name();
         queryConsistency = sessionCouchbase.getPersistent().getQueryConsistency();
         this.couchbaseTemplate = couchbaseTemplate;
         this.retryTemplate = retryTemplate;
