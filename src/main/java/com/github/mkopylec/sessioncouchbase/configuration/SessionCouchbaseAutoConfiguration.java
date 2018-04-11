@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.config.annotation.web.http.EnableSpringHttpSession;
 import org.springframework.session.web.http.CookieHttpSessionStrategy;
+import org.springframework.session.web.http.CookieSerializer;
 import org.springframework.session.web.http.MultiHttpSessionStrategy;
 
 @Configuration
@@ -24,10 +25,16 @@ public class SessionCouchbaseAutoConfiguration {
     @Autowired
     protected SessionCouchbaseProperties sessionCouchbase;
 
+    private CookieSerializer cookieSerializer;
+
     @Bean
     @ConditionalOnMissingBean
     public MultiHttpSessionStrategy multiHttpSessionStrategy(SessionDao dao) {
-        return new DelegatingSessionStrategy(new CookieHttpSessionStrategy(), dao);
+        CookieHttpSessionStrategy sessionStrategy = new CookieHttpSessionStrategy();
+        if (cookieSerializer != null) {
+            sessionStrategy.setCookieSerializer(cookieSerializer);
+        }
+        return new DelegatingSessionStrategy(sessionStrategy, dao);
     }
 
     @Bean
@@ -47,4 +54,10 @@ public class SessionCouchbaseAutoConfiguration {
     public ObjectMapper objectMapper() {
         return new ObjectMapper();
     }
+
+    @Autowired(required = false)
+    public void setCookieSerializer(CookieSerializer cookieSerializer) {
+        this.cookieSerializer = cookieSerializer;
+    }
+
 }

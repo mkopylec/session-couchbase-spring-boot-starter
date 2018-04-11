@@ -296,7 +296,7 @@ abstract class BasicSpec extends Specification {
         if (cookiesHeader == null) {
             return
         }
-        def cookieHeader = cookiesHeader.find { it -> it.contains('SESSION') }
+        def cookieHeader = cookiesHeader.find { it -> it.contains(TestApplication.Config.COOKIE_NAME) }
         if (cookieHeader == null) {
             return
         }
