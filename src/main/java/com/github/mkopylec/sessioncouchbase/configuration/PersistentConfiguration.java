@@ -26,8 +26,6 @@ import java.util.Map;
 public class PersistentConfiguration {
 
     @Autowired
-    protected CouchbaseProperties couchbase;
-    @Autowired
     protected SessionCouchbaseProperties sessionCouchbase;
 
     @Bean
@@ -51,6 +49,6 @@ public class PersistentConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public SessionDao sessionDao(CouchbaseTemplate couchbaseTemplate, @Qualifier("sessionCouchbaseRetryTemplate") RetryTemplate retryTemplate) {
-        return new PersistentDao(couchbase, sessionCouchbase, couchbaseTemplate, retryTemplate);
+        return new PersistentDao(sessionCouchbase, couchbaseTemplate, retryTemplate);
     }
 }
