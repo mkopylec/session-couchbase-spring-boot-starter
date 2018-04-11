@@ -16,7 +16,7 @@ public class TestApplication {
     }
 
     @Configuration
-    public static class Config {
+    public static class TestConfiguration {
 
         public static final String COOKIE_NAME = "sessionCookie";
 

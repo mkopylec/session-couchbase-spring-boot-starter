@@ -21,6 +21,7 @@ import spock.lang.Specification
 
 import static com.couchbase.client.java.query.N1qlQuery.simple
 import static com.github.mkopylec.sessioncouchbase.SessionController.PRINCIPAL_NAME
+import static com.github.mkopylec.sessioncouchbase.TestApplication.TestConfiguration.COOKIE_NAME
 import static java.net.HttpCookie.parse
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -296,7 +297,7 @@ abstract class BasicSpec extends Specification {
         if (cookiesHeader == null) {
             return
         }
-        def cookieHeader = cookiesHeader.find { it -> it.contains(TestApplication.Config.COOKIE_NAME) }
+        def cookieHeader = cookiesHeader.find { it -> it.contains(COOKIE_NAME) }
         if (cookieHeader == null) {
             return
         }
