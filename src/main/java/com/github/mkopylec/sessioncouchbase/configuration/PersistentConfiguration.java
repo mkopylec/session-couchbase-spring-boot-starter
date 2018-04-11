@@ -1,13 +1,15 @@
 package com.github.mkopylec.sessioncouchbase.configuration;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.github.mkopylec.sessioncouchbase.data.PersistentDao;
 import com.github.mkopylec.sessioncouchbase.data.RetryLoggingListener;
 import com.github.mkopylec.sessioncouchbase.data.SessionDao;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,17 +18,17 @@ import org.springframework.data.couchbase.repository.config.EnableCouchbaseRepos
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Configuration
 @EnableCouchbaseRepositories
-@EnableConfigurationProperties({SessionCouchbaseProperties.class, CouchbaseProperties.class})
+@EnableConfigurationProperties(SessionCouchbaseProperties.class)
 @ConditionalOnProperty(name = "session-couchbase.in-memory.enabled", havingValue = "false", matchIfMissing = true)
 public class PersistentConfiguration {
 
-    @Autowired
     protected SessionCouchbaseProperties sessionCouchbase;
+
+    public PersistentConfiguration(SessionCouchbaseProperties sessionCouchbase) {
+        this.sessionCouchbase = sessionCouchbase;
+    }
 
     @Bean
     @ConditionalOnMissingBean

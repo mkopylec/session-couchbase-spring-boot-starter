@@ -5,6 +5,7 @@ import com.github.mkopylec.sessioncouchbase.core.CouchbaseSessionRepository;
 import com.github.mkopylec.sessioncouchbase.core.DelegatingSessionStrategy;
 import com.github.mkopylec.sessioncouchbase.core.Serializer;
 import com.github.mkopylec.sessioncouchbase.data.SessionDao;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -22,10 +23,12 @@ import org.springframework.session.web.http.MultiHttpSessionStrategy;
 @EnableConfigurationProperties(SessionCouchbaseProperties.class)
 public class SessionCouchbaseAutoConfiguration {
 
-    @Autowired
     protected SessionCouchbaseProperties sessionCouchbase;
+    protected CookieSerializer cookieSerializer;
 
-    private CookieSerializer cookieSerializer;
+    public SessionCouchbaseAutoConfiguration(SessionCouchbaseProperties sessionCouchbase) {
+        this.sessionCouchbase = sessionCouchbase;
+    }
 
     @Bean
     @ConditionalOnMissingBean
@@ -59,5 +62,4 @@ public class SessionCouchbaseAutoConfiguration {
     public void setCookieSerializer(CookieSerializer cookieSerializer) {
         this.cookieSerializer = cookieSerializer;
     }
-
 }
