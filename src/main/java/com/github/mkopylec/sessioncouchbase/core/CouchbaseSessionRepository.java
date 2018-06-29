@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.System.currentTimeMillis;
+import static java.time.Instant.now;
 import static java.util.Collections.emptyMap;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.util.Assert.hasText;
@@ -102,7 +102,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
     }
 
     @Override
-    public CouchbaseSession getSession(String id) {
+    public CouchbaseSession findById(String id) {
         Map<String, Object> globalAttributes = dao.findSessionAttributes(id, GLOBAL_NAMESPACE);
         Map<String, Object> namespaceAttributes = dao.findSessionAttributes(id, namespace);
 
@@ -126,7 +126,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
             eventPublisher.publishEvent(new SessionExpiredEvent(this, session));
             return null;
         }
-        session.setLastAccessedTime(currentTimeMillis());
+        session.setLastAccessedTime(now());
 
         log.debug("HTTP session with ID {} has been found", id);
 
@@ -134,8 +134,8 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
     }
 
     @Override
-    public void delete(String id) {
-        CouchbaseSession session = getSession(id);
+    public void deleteById(String id) {
+        CouchbaseSession session = findById(id);
         if (session == null) {
             return;
         }
@@ -158,7 +158,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
         }
         Map<String, CouchbaseSession> sessionsById = new HashMap<>(sessionsDocument.getSessionIds().size());
         sessionsDocument.getSessionIds().forEach(sessionId -> {
-            CouchbaseSession session = getSession(sessionId);
+            CouchbaseSession session = findById(sessionId);
             if (session != null) {
                 sessionsById.put(sessionId, session);
             }

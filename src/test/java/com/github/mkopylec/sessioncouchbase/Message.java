@@ -39,4 +39,12 @@ public class Message implements Serializable {
     public int hashCode() {
         return Objects.hash(text, number);
     }
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "text='" + text + '\'' +
+                ", number=" + number +
+                '}';
+    }
 }

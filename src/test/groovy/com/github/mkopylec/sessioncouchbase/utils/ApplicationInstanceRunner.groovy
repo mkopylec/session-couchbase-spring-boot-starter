@@ -2,14 +2,14 @@ package com.github.mkopylec.sessioncouchbase.utils
 
 import com.github.mkopylec.sessioncouchbase.TestApplication
 import org.springframework.boot.SpringApplication
-import org.springframework.boot.context.embedded.EmbeddedWebApplicationContext
+import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext
 
 import static org.springframework.boot.SpringApplication.exit
 
 class ApplicationInstanceRunner {
 
     private final Object monitor = new Object()
-    private EmbeddedWebApplicationContext context
+    private ServletWebServerApplicationContext context
     private boolean shouldWait
     private String activeProfiles
     private int port
@@ -53,9 +53,9 @@ class ApplicationInstanceRunner {
     private class InstanceRunningThread extends Thread {
 
         @Override
-        public void run() {
-            context = SpringApplication.run(TestApplication, '--server.port=0', "--spring.profiles.active=$activeProfiles") as EmbeddedWebApplicationContext
-            port = context.embeddedServletContainer.port
+        void run() {
+            context = SpringApplication.run(TestApplication, '--server.port=0', "--spring.profiles.active=$activeProfiles") as ServletWebServerApplicationContext
+            port = context.webServer.port
             synchronized (monitor) {
                 shouldWait = false
                 monitor.notify()

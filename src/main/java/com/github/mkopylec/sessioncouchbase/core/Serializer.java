@@ -52,6 +52,6 @@ public class Serializer {
     }
 
     protected boolean isSerializedObject(Object attributeValue) {
-        return attributeValue != null && attributeValue instanceof String && startsWith(attributeValue.toString(), SERIALIZED_OBJECT_PREFIX);
+        return attributeValue instanceof String && startsWith(attributeValue.toString(), SERIALIZED_OBJECT_PREFIX);
     }
 }

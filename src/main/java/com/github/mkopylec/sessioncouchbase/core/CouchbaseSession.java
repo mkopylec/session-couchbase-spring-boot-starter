@@ -3,18 +3,19 @@ package com.github.mkopylec.sessioncouchbase.core;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
-import org.springframework.session.ExpiringSession;
+import org.springframework.session.Session;
 
-import java.io.Serializable;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static java.lang.System.currentTimeMillis;
+import static java.time.Duration.ofSeconds;
+import static java.time.Instant.now;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.UUID.randomUUID;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.removeStart;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -22,9 +23,7 @@ import static org.springframework.session.FindByIndexNameSessionRepository.PRINC
 import static org.springframework.util.Assert.hasText;
 import static org.springframework.util.Assert.isTrue;
 
-public class CouchbaseSession implements ExpiringSession, Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class CouchbaseSession implements Session {
 
     public static final String CREATION_TIME_ATTRIBUTE = "$creationTime";
     public static final String LAST_ACCESSED_TIME_ATTRIBUTE = "$lastAccessedTime";
@@ -33,8 +32,10 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
 
     private static final Logger log = getLogger(CouchbaseSession.class);
 
-    protected String id = randomUUID().toString();
+    protected String id = generateSessionId();
+
     protected Map<String, Object> globalAttributesToUpdate = new HashMap<>();
+
     protected Set<String> globalAttributesToRemove = new HashSet<>();
     protected Map<String, Object> globalAttributes = new HashMap<>();
     protected Map<String, Object> namespaceAttributesToUpdate = new HashMap<>();
@@ -43,10 +44,10 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     protected boolean principalSessionsUpdateRequired = false;
 
     public CouchbaseSession(int timeoutInSeconds) {
-        long now = currentTimeMillis();
+        Instant now = now();
         setCreationTime(now);
         setLastAccessedTime(now);
-        setMaxInactiveIntervalInSeconds(timeoutInSeconds);
+        setMaxInactiveInterval(ofSeconds(timeoutInSeconds));
     }
 
     public CouchbaseSession(String id, Map<String, Object> globalAttributes, Map<String, Object> namespaceAttributes) {
@@ -63,38 +64,46 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
     }
 
     @Override
-    public long getCreationTime() {
-        return getNumericGlobalAttributeValue(CREATION_TIME_ATTRIBUTE);
+    public Instant getCreationTime() {
+        return getDateGlobalAttributeValue(CREATION_TIME_ATTRIBUTE);
     }
 
     @Override
-    public long getLastAccessedTime() {
-        return getNumericGlobalAttributeValue(LAST_ACCESSED_TIME_ATTRIBUTE);
-    }
-
-    public void setLastAccessedTime(long lastAccessedTime) {
-        globalAttributes.put(LAST_ACCESSED_TIME_ATTRIBUTE, lastAccessedTime);
-        globalAttributesToUpdate.put(LAST_ACCESSED_TIME_ATTRIBUTE, lastAccessedTime);
+    public void setLastAccessedTime(Instant lastAccessedTime) {
+        globalAttributes.put(LAST_ACCESSED_TIME_ATTRIBUTE, lastAccessedTime.getEpochSecond());
+        globalAttributesToUpdate.put(LAST_ACCESSED_TIME_ATTRIBUTE, lastAccessedTime.getEpochSecond());
     }
 
     @Override
-    public void setMaxInactiveIntervalInSeconds(int interval) {
-        globalAttributes.put(MAX_INACTIVE_INTERVAL_ATTRIBUTE, interval);
-        globalAttributesToUpdate.put(MAX_INACTIVE_INTERVAL_ATTRIBUTE, interval);
+    public Instant getLastAccessedTime() {
+        return getDateGlobalAttributeValue(LAST_ACCESSED_TIME_ATTRIBUTE);
     }
 
     @Override
-    public int getMaxInactiveIntervalInSeconds() {
-        return (int) globalAttributes.get(MAX_INACTIVE_INTERVAL_ATTRIBUTE);
+    public void setMaxInactiveInterval(Duration interval) {
+        globalAttributes.put(MAX_INACTIVE_INTERVAL_ATTRIBUTE, interval.getSeconds());
+        globalAttributesToUpdate.put(MAX_INACTIVE_INTERVAL_ATTRIBUTE, interval.getSeconds());
+    }
+
+    @Override
+    public Duration getMaxInactiveInterval() {
+        long interval = getNumericGlobalAttributeValue(MAX_INACTIVE_INTERVAL_ATTRIBUTE);
+        return ofSeconds(interval);
     }
 
     @Override
     public boolean isExpired() {
-        return getMaxInactiveIntervalInSeconds() >= 0 && currentTimeMillis() - SECONDS.toMillis(getMaxInactiveIntervalInSeconds()) >= getLastAccessedTime();
+        return now().minus(getMaxInactiveInterval()).compareTo(getLastAccessedTime()) >= 0;
     }
 
     @Override
     public String getId() {
+        return id;
+    }
+
+    @Override
+    public String changeSessionId() {
+        id = generateSessionId();
         return id;
     }
 
@@ -217,9 +226,9 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
         principalSessionsUpdateRequired = false;
     }
 
-    protected void setCreationTime(long creationTime) {
-        globalAttributes.put(CREATION_TIME_ATTRIBUTE, creationTime);
-        globalAttributesToUpdate.put(CREATION_TIME_ATTRIBUTE, creationTime);
+    protected void setCreationTime(Instant creationTime) {
+        globalAttributes.put(CREATION_TIME_ATTRIBUTE, creationTime.getEpochSecond());
+        globalAttributesToUpdate.put(CREATION_TIME_ATTRIBUTE, creationTime.getEpochSecond());
     }
 
     protected void checkAttributeName(String attributeName) {
@@ -239,7 +248,16 @@ public class CouchbaseSession implements ExpiringSession, Serializable {
         return globalAttributes.containsKey(PRINCIPAL_NAME_INDEX_NAME) || namespaceAttributes.containsKey(PRINCIPAL_NAME_INDEX_NAME);
     }
 
+    protected Instant getDateGlobalAttributeValue(String attributeName) {
+        long attributeValue = getNumericGlobalAttributeValue(attributeName);
+        return Instant.ofEpochSecond(attributeValue);
+    }
+
     protected long getNumericGlobalAttributeValue(String attributeName) {
         return ((Number) globalAttributes.get(attributeName)).longValue();
+    }
+
+    protected String generateSessionId() {
+        return randomUUID().toString();
     }
 }

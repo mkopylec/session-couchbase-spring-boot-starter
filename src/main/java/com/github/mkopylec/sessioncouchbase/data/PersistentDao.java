@@ -8,13 +8,11 @@ import com.couchbase.client.java.query.consistency.ScanConsistency;
 import com.github.mkopylec.sessioncouchbase.configuration.SessionCouchbaseProperties;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties;
 import org.springframework.data.couchbase.core.CouchbaseQueryExecutionException;
 import org.springframework.data.couchbase.core.CouchbaseTemplate;
 import org.springframework.retry.support.RetryTemplate;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,6 +24,7 @@ import static com.couchbase.client.java.query.N1qlParams.build;
 import static com.couchbase.client.java.query.N1qlQuery.parameterized;
 import static java.util.stream.Collectors.toList;
 
+// TODO document per namespace
 public class PersistentDao implements SessionDao {
 
     protected final String bucket;
@@ -89,19 +88,6 @@ public class PersistentDao implements SessionDao {
             return null;
         }
         return document.toMap();
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public SessionDocument findById(String id) {
-        JsonObject document = findByDocumentKey(id);
-        if (document == null) {
-            return null;
-        }
-        Map<String, Object> namespaces = document.getObject("data").toMap();
-        Map<String, Map<String, Object>> data = new HashMap<>(namespaces.size());
-        namespaces.forEach((namespace, namespaceData) -> data.put(namespace, (Map<String, Object>) namespaceData));
-        return new SessionDocument(id, data);
     }
 
     @Override

@@ -66,11 +66,6 @@ public class InMemoryDao implements SessionDao, InitializingBean {
     }
 
     @Override
-    public SessionDocument findById(String id) {
-        return sessions.get(id);
-    }
-
-    @Override
     public PrincipalSessionsDocument findByPrincipal(String principal) {
         return principalSessions.get(principal);
     }
