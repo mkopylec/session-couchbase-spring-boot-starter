@@ -25,7 +25,6 @@ import static com.couchbase.client.java.query.N1qlParams.build;
 import static com.couchbase.client.java.query.N1qlQuery.parameterized;
 import static java.util.stream.Collectors.toList;
 
-// TODO document per namespace
 public class PersistentDao implements SessionDao {
 
     protected final String bucket;
