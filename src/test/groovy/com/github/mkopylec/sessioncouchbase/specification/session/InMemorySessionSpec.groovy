@@ -8,7 +8,6 @@ import static com.github.mkopylec.sessioncouchbase.assertions.Assertions.assertT
 @ActiveProfiles('in-memory')
 class InMemorySessionSpec extends SessionSpec {
 
-    // TODO Changed session ID is not set i Set-Cookie header (a different value is set) - WTF?
     def "Should copy HTTP session attributes when session ID was changed"() {
         given:
         def message = new Message(text: 'i cannot disappear!', number: 13)

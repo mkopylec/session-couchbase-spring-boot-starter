@@ -7,6 +7,7 @@ public interface SessionDao {
 
     void insertNamespace(String namespace, String id);
 
+    // TODO When changing session ID document does not exist in Couchbase
     void updateSession(Map<String, Object> attributesToUpdate, Set<String> attributesToRemove, String namespace, String id);
 
     void updatePutPrincipalSession(String principal, String sessionId);
