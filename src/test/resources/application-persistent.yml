@@ -3,4 +3,3 @@ spring.couchbase:
   bucket:
     name: default
     password:
-  env.timeouts.query: 20000

@@ -95,8 +95,8 @@ abstract class BasicSpec extends Specification {
         return sessionDao.exists(PRINCIPAL_NAME)
     }
 
-    protected int getSessionTimeout() {
-        return sessionCouchbase.timeoutInSeconds * 1000
+    protected long getSessionTimeout() {
+        return sessionCouchbase.timeout.toMillis()
     }
 
     protected void executeConcurrently(Closure operation) {

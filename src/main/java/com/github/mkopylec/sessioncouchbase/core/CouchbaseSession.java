@@ -43,11 +43,11 @@ public class CouchbaseSession implements Session {
     protected Map<String, Object> namespaceAttributes = new HashMap<>();
     protected boolean principalSessionsUpdateRequired = false;
 
-    public CouchbaseSession(int timeoutInSeconds) {
+    public CouchbaseSession(Duration timeout) {
         Instant now = now();
         setCreationTime(now);
         setLastAccessedTime(now);
-        setMaxInactiveInterval(ofSeconds(timeoutInSeconds));
+        setMaxInactiveInterval(timeout);
     }
 
     public CouchbaseSession(String id, Map<String, Object> globalAttributes, Map<String, Object> namespaceAttributes) {

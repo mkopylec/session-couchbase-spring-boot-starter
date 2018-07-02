@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.Math.toIntExact;
 import static java.time.Instant.now;
 import static java.util.Collections.emptyMap;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -31,10 +32,10 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
 
     private static final Logger log = getLogger(CouchbaseSessionRepository.class);
 
+    protected final SessionCouchbaseProperties sessionCouchbase;
     protected final SessionDao dao;
     protected final ObjectMapper mapper;
     protected final String namespace;
-    protected final int sessionTimeout;
     protected final Serializer serializer;
     protected final boolean principalSessionsEnabled;
     protected final ApplicationEventPublisher eventPublisher;
@@ -54,10 +55,10 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
         isTrue(!namespace.equals(GLOBAL_NAMESPACE), "Forbidden HTTP session namespace '" + namespace + "'");
         notNull(serializer, "Missing object serializer");
         notNull(eventPublisher, "Missing application event publisher");
+        this.sessionCouchbase = sessionCouchbase;
         this.dao = dao;
         this.mapper = mapper;
         this.namespace = namespace.trim();
-        this.sessionTimeout = sessionCouchbase.getTimeoutInSeconds();
         this.serializer = serializer;
         this.principalSessionsEnabled = sessionCouchbase.getPrincipalSessions().isEnabled();
         this.eventPublisher = eventPublisher;
@@ -65,7 +66,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
 
     @Override
     public CouchbaseSession createSession() {
-        CouchbaseSession session = new CouchbaseSession(sessionTimeout);
+        CouchbaseSession session = new CouchbaseSession(sessionCouchbase.getTimeout());
         Map<String, Map<String, Object>> sessionData = new HashMap<>(2);
         sessionData.put(GLOBAL_NAMESPACE, session.getGlobalAttributes());
         sessionData.put(namespace, session.getNamespaceAttributes());
@@ -173,7 +174,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
     }
 
     protected int getSessionDocumentExpiration() {
-        return sessionTimeout + SESSION_DOCUMENT_EXPIRATION_DELAY_IN_SECONDS;
+        return toIntExact(sessionCouchbase.getTimeout().plusSeconds(SESSION_DOCUMENT_EXPIRATION_DELAY_IN_SECONDS).getSeconds());
     }
 
     protected void savePrincipalSession(CouchbaseSession session) {

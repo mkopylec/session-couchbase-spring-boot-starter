@@ -4,7 +4,10 @@ import com.couchbase.client.java.query.consistency.ScanConsistency;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
+import java.time.Duration;
+
 import static com.couchbase.client.java.query.consistency.ScanConsistency.REQUEST_PLUS;
+import static java.time.Duration.ofSeconds;
 
 /**
  * Session couchbase configuration properties.
@@ -15,7 +18,7 @@ public class SessionCouchbaseProperties {
     /**
      * HTTP session timeout.
      */
-    private int timeoutInSeconds = 1800;
+    private Duration timeout = ofSeconds(1800);
     /**
      * HTTP session application namespace under which session data must be stored.
      */
@@ -36,12 +39,12 @@ public class SessionCouchbaseProperties {
     @NestedConfigurationProperty
     private InMemory inMemory = new InMemory();
 
-    public int getTimeoutInSeconds() {
-        return timeoutInSeconds;
+    public Duration getTimeout() {
+        return timeout;
     }
 
-    public void setTimeoutInSeconds(int timeoutInSeconds) {
-        this.timeoutInSeconds = timeoutInSeconds;
+    public void setTimeout(Duration timeout) {
+        this.timeout = timeout;
     }
 
     public String getApplicationNamespace() {

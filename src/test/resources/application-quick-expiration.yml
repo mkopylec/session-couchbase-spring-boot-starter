@@ -1,2 +1,2 @@
 session-couchbase:
-  timeout-in-seconds: 1
+  timeout: 1s
