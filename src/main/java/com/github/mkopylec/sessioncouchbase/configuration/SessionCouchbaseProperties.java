@@ -8,6 +8,7 @@ import java.time.Duration;
 
 import static com.couchbase.client.java.query.consistency.ScanConsistency.REQUEST_PLUS;
 import static java.time.Duration.ofSeconds;
+import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 /**
  * Session couchbase configuration properties.
@@ -48,7 +49,7 @@ public class SessionCouchbaseProperties {
     }
 
     public String getApplicationNamespace() {
-        return applicationNamespace;
+        return trimToNull(applicationNamespace);
     }
 
     public void setApplicationNamespace(String applicationNamespace) {

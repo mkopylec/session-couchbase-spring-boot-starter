@@ -66,6 +66,11 @@ public class InMemoryDao implements SessionDao, InitializingBean {
     }
 
     @Override
+    public SessionDocument findById(String id) {
+        return sessions.get(id);
+    }
+
+    @Override
     public PrincipalSessionsDocument findByPrincipal(String principal) {
         return principalSessions.get(principal);
     }
@@ -106,7 +111,7 @@ public class InMemoryDao implements SessionDao, InitializingBean {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         expirationScheduler.initialize();
         expirationScheduler.scheduleAtFixedRate(() -> {
             Iterator<Entry<String, Long>> iterator = expirationTimes.entrySet().iterator();

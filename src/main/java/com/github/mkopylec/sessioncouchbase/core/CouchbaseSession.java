@@ -42,6 +42,8 @@ public class CouchbaseSession implements Session {
     protected Set<String> namespaceAttributesToRemove = new HashSet<>();
     protected Map<String, Object> namespaceAttributes = new HashMap<>();
     protected boolean principalSessionsUpdateRequired = false;
+    protected boolean idChanged = false;
+    protected String oldId;
 
     public CouchbaseSession(Duration timeout) {
         Instant now = now();
@@ -103,7 +105,10 @@ public class CouchbaseSession implements Session {
 
     @Override
     public String changeSessionId() {
+        oldId = id;
         id = generateSessionId();
+        idChanged = true;
+        log.debug("HTTP session ID has changed from {} to {}", oldId, id);
         return id;
     }
 
@@ -212,6 +217,14 @@ public class CouchbaseSession implements Session {
 
     public boolean isPrincipalSessionsUpdateRequired() {
         return principalSessionsUpdateRequired;
+    }
+
+    public boolean isIdChanged() {
+        return idChanged;
+    }
+
+    public String getOldId() {
+        return oldId;
     }
 
     public String getPrincipalAttribute() {

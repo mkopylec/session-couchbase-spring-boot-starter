@@ -35,9 +35,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
     protected final SessionCouchbaseProperties sessionCouchbase;
     protected final SessionDao dao;
     protected final ObjectMapper mapper;
-    protected final String namespace;
     protected final Serializer serializer;
-    protected final boolean principalSessionsEnabled;
     protected final ApplicationEventPublisher eventPublisher;
 
     public CouchbaseSessionRepository(
@@ -58,19 +56,14 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
         this.sessionCouchbase = sessionCouchbase;
         this.dao = dao;
         this.mapper = mapper;
-        this.namespace = namespace.trim();
         this.serializer = serializer;
-        this.principalSessionsEnabled = sessionCouchbase.getPrincipalSessions().isEnabled();
         this.eventPublisher = eventPublisher;
     }
 
     @Override
     public CouchbaseSession createSession() {
         CouchbaseSession session = new CouchbaseSession(sessionCouchbase.getTimeout());
-        Map<String, Map<String, Object>> sessionData = new HashMap<>(2);
-        sessionData.put(GLOBAL_NAMESPACE, session.getGlobalAttributes());
-        sessionData.put(namespace, session.getNamespaceAttributes());
-        SessionDocument sessionDocument = new SessionDocument(session.getId(), sessionData);
+        SessionDocument sessionDocument = convertToDocument(session);
         dao.save(sessionDocument);
         dao.updateExpirationTime(session.getId(), getSessionDocumentExpiration());
         eventPublisher.publishEvent(new SessionCreatedEvent(this, session));
@@ -82,6 +75,9 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
 
     @Override
     public void save(CouchbaseSession session) {
+        if (session.isIdChanged()) {
+            changeSessionId(session);
+        }
         if (session.isGlobalPersistenceRequired()) {
             Map<String, Object> serializedGlobal = serializer.serializeSessionAttributes(session.getGlobalAttributesToUpdate());
             dao.updateSession(serializedGlobal, session.getGlobalAttributesToRemove(), GLOBAL_NAMESPACE, session.getId());
@@ -91,7 +87,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
 
         if (session.isNamespacePersistenceRequired()) {
             Map<String, Object> serializedNamespace = serializer.serializeSessionAttributes(session.getNamespaceAttributesToUpdate());
-            dao.updateSession(serializedNamespace, session.getNamespaceAttributesToRemove(), namespace, session.getId());
+            dao.updateSession(serializedNamespace, session.getNamespaceAttributesToRemove(), sessionCouchbase.getApplicationNamespace(), session.getId());
             log.debug("Application namespace attributes of HTTP session with ID {} has been saved", session.getId());
             session.clearChangedNamespaceAttributes();
         }
@@ -105,7 +101,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
     @Override
     public CouchbaseSession findById(String id) {
         Map<String, Object> globalAttributes = dao.findSessionAttributes(id, GLOBAL_NAMESPACE);
-        Map<String, Object> namespaceAttributes = dao.findSessionAttributes(id, namespace);
+        Map<String, Object> namespaceAttributes = dao.findSessionAttributes(id, sessionCouchbase.getApplicationNamespace());
 
         if (globalAttributes == null && namespaceAttributes == null) {
             log.debug("HTTP session with ID {} not found", id);
@@ -115,7 +111,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
         notNull(globalAttributes, "Invalid state of HTTP session persisted in couchbase. Missing global attributes.");
 
         if (namespaceAttributes == null) {
-            dao.insertNamespace(namespace, id);
+            dao.insertNamespace(sessionCouchbase.getApplicationNamespace(), id);
         }
 
         Map<String, Object> deserializedGlobal = serializer.deserializeSessionAttributes(globalAttributes);
@@ -146,7 +142,7 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
 
     @Override
     public Map<String, CouchbaseSession> findByIndexNameAndIndexValue(String indexName, String indexValue) {
-        if (!principalSessionsEnabled) {
+        if (!sessionCouchbase.getPrincipalSessions().isEnabled()) {
             throw new IllegalStateException("Cannot get principal HTTP sessions. Enable getting principal HTTP sessions using 'session-couchbase.principal-sessions.enabled' configuration property.");
         }
         if (!PRINCIPAL_NAME_INDEX_NAME.equals(indexName)) {
@@ -171,6 +167,23 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
         log.debug("Principals {} sessions with IDs {} have been found", indexValue, sessionsById.keySet());
 
         return sessionsById;
+    }
+
+    protected SessionDocument convertToDocument(CouchbaseSession session) {
+        Map<String, Map<String, Object>> sessionData = new HashMap<>(2);
+        sessionData.put(GLOBAL_NAMESPACE, session.getGlobalAttributes());
+        sessionData.put(sessionCouchbase.getApplicationNamespace(), session.getNamespaceAttributes());
+        return new SessionDocument(session.getId(), sessionData);
+    }
+
+    protected void changeSessionId(CouchbaseSession session) {
+        SessionDocument oldDocument = dao.findById(session.getOldId());
+        notNull(oldDocument, "Cannot change HTTP session ID, because session document with ID '" + session.getOldId() + "' does not exist in data storage");
+        dao.delete(session.getOldId());
+        log.debug("Old HTTP session with ID {} has been deleted after changing HTTP session ID", session.getOldId());
+        SessionDocument newDocument = new SessionDocument(session.getId(), oldDocument.getData());
+        dao.save(newDocument);
+        log.debug("New HTTP session with ID {} has been saved after changing HTTP session ID", session.getId());
     }
 
     protected int getSessionDocumentExpiration() {
@@ -201,6 +214,6 @@ public class CouchbaseSessionRepository implements FindByIndexNameSessionReposit
     }
 
     protected boolean isOperationOnPrincipalSessionsRequired(CouchbaseSession session) {
-        return principalSessionsEnabled && session.isPrincipalSessionsUpdateRequired();
+        return sessionCouchbase.getPrincipalSessions().isEnabled() && session.isPrincipalSessionsUpdateRequired();
     }
 }

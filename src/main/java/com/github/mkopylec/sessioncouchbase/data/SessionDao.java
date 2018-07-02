@@ -16,6 +16,8 @@ public interface SessionDao {
 
     Map<String, Object> findSessionAttributes(String id, String namespace);
 
+    SessionDocument findById(String id);
+
     PrincipalSessionsDocument findByPrincipal(String principal);
 
     void updateExpirationTime(String id, int expiry);
