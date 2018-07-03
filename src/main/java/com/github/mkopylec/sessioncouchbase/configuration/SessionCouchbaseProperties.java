@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import java.time.Duration;
 
 import static com.couchbase.client.java.query.consistency.ScanConsistency.REQUEST_PLUS;
-import static java.time.Duration.ofSeconds;
+import static java.time.Duration.ofMinutes;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 /**
@@ -19,7 +19,7 @@ public class SessionCouchbaseProperties {
     /**
      * HTTP session timeout.
      */
-    private Duration timeout = ofSeconds(1800);
+    private Duration timeout = ofMinutes(30);
     /**
      * HTTP session application namespace under which session data must be stored.
      */
