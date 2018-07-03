@@ -14,6 +14,7 @@ import java.util.Set;
 
 import static java.time.Duration.ofSeconds;
 import static java.time.Instant.now;
+import static java.time.Instant.ofEpochSecond;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toSet;
@@ -263,7 +264,7 @@ public class CouchbaseSession implements Session {
 
     protected Instant getDateGlobalAttributeValue(String attributeName) {
         long attributeValue = getNumericGlobalAttributeValue(attributeName);
-        return Instant.ofEpochSecond(attributeValue);
+        return ofEpochSecond(attributeValue);
     }
 
     protected long getNumericGlobalAttributeValue(String attributeName) {
