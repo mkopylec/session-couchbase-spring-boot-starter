@@ -4,3 +4,6 @@ spring:
     bucket:
       name: default
       password:
+    env:
+      timeouts:
+        query: 20s
