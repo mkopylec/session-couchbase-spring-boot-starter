@@ -7,8 +7,8 @@ import com.github.mkopylec.sessioncouchbase.utils.ApplicationInstance
 import com.github.mkopylec.sessioncouchbase.utils.ApplicationInstanceRunner
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties
-import org.springframework.boot.context.embedded.EmbeddedWebApplicationContext
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext
 import org.springframework.core.env.Environment
 import org.springframework.data.couchbase.core.CouchbaseTemplate
 import org.springframework.http.HttpEntity
@@ -21,7 +21,6 @@ import spock.lang.Specification
 
 import static com.couchbase.client.java.query.N1qlQuery.simple
 import static com.github.mkopylec.sessioncouchbase.SessionController.PRINCIPAL_NAME
-import static com.github.mkopylec.sessioncouchbase.TestApplication.TestConfiguration.COOKIE_NAME
 import static java.net.HttpCookie.parse
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -48,7 +47,7 @@ abstract class BasicSpec extends Specification {
     @Autowired
     private SessionEventConsumer eventConsumer
     @Autowired
-    private EmbeddedWebApplicationContext context
+    private ServletWebServerApplicationContext context
     private int extraInstancePort
     private ApplicationInstance instance
     @Autowired(required = false)
@@ -96,8 +95,8 @@ abstract class BasicSpec extends Specification {
         return sessionDao.exists(PRINCIPAL_NAME)
     }
 
-    protected int getSessionTimeout() {
-        return sessionCouchbase.timeoutInSeconds * 1000
+    protected long getSessionTimeout() {
+        return sessionCouchbase.timeout.toMillis()
     }
 
     protected void executeConcurrently(Closure operation) {
@@ -278,12 +277,12 @@ abstract class BasicSpec extends Specification {
         saveSessionCookie(response)
     }
 
-    private static GString createUrl(String path, int port) {
+    private static String createUrl(String path, int port) {
         return "http://localhost:$port/$path"
     }
 
     private int getPort() {
-        return context.embeddedServletContainer.port
+        return context.webServer.port
     }
 
     private HttpHeaders addSessionCookie() {
@@ -297,7 +296,7 @@ abstract class BasicSpec extends Specification {
         if (cookiesHeader == null) {
             return
         }
-        def cookieHeader = cookiesHeader.find { it -> it.contains(COOKIE_NAME) }
+        def cookieHeader = cookiesHeader.find { it -> it.contains('SESSION') }
         if (cookieHeader == null) {
             return
         }

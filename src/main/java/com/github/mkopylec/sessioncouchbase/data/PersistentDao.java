@@ -8,7 +8,6 @@ import com.couchbase.client.java.query.consistency.ScanConsistency;
 import com.github.mkopylec.sessioncouchbase.configuration.SessionCouchbaseProperties;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties;
 import org.springframework.data.couchbase.core.CouchbaseQueryExecutionException;
 import org.springframework.data.couchbase.core.CouchbaseTemplate;
 import org.springframework.retry.support.RetryTemplate;

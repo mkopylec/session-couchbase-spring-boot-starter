@@ -14,6 +14,10 @@ The project supports only Couchbase 4 and higher versions. For more information 
 - remove `@EnableCouchbaseHttpSession` annotation
 - replace `session-couchbase.persistent.couchbase` properties with `spring.couchbase` in the _application.yml_ file
 
+## Migrating from 2.x.x to 3.x.x
+
+- `session-couchbase.timeout-in-seconds` `int` property in the _application.yml_ file is replaced by `session-couchbase.timeout` `Duration` property
+
 ## Installing
 
 ```gradle
@@ -21,7 +25,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    compile 'com.github.mkopylec:session-couchbase-spring-boot-starter:2.2.0'
+    compile group: 'com.github.mkopylec', name: 'session-couchbase-spring-boot-starter', version: '3.0.0'
 }
 ```
 
@@ -44,7 +48,7 @@ Simply use `HttpSession` interface to control HTTP session. For example:
 @Controller
 public class SessionController {
 
-    @GetMapping("uri")
+    @GetMapping("/uri")
     public void doSomething(HttpSession session) {
         ...
     }
@@ -93,7 +97,7 @@ The session is visible only within a single web application instance and will be
 The mode is useful for integration tests when you don't want to communicate with the real Couchbase server instance.
 
 ## Namespaces
-The starter supports HTTP session namespaces.
+The starter supports HTTP session namespaces to prevent session attribute's names conflicts in a distributed systems like platforms composed with micro-services.
 The name of the namespace can be set in _application.yml_ file:
 
 ```yaml
@@ -101,9 +105,8 @@ session-couchbase:
     application-namespace: <application_namespace>
 ```
 
-Each web application in a distributed system has one application namespace under which the session attributes are stored.
+Each web application in a distributed system can have one application namespace under which the application's session attributes are stored.
 Every web application can also access global session attributes which are visible across the whole distributed system.
-Namespaces prevent conflicts in attributes names between different web applications in the system.
 Two web applications can have the same namespace and therefore access the same session attributes.
 If two web applications have different namespaces they cannot access each others session attributes.
 
@@ -143,7 +146,7 @@ When changing HTTP session ID every attribute is copied to the new session, no m
 
 ```yaml
 session-couchbase:
-    timeout-in-seconds: 1800 # HTTP session timeout.
+    timeout: 30m # HTTP session timeout.
     application-namespace: default # HTTP session application namespace under which session data must be stored.
     principal-sessions:
         enabled: false # Flag for enabling and disabling finding HTTP sessions by principal. Can significantly decrease application performance when enabled.

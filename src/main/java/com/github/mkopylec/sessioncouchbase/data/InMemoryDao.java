@@ -111,7 +111,7 @@ public class InMemoryDao implements SessionDao, InitializingBean {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         expirationScheduler.initialize();
         expirationScheduler.scheduleAtFixedRate(() -> {
             Iterator<Entry<String, Long>> iterator = expirationTimes.entrySet().iterator();

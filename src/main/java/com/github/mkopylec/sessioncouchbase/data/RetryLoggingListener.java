@@ -13,8 +13,7 @@ public class RetryLoggingListener extends RetryListenerSupport {
 
     @Override
     public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback, Throwable throwable) {
-        int attempt = context.getRetryCount() + 1;
-        log.debug("Attempt " + attempt + " to query Couchbase has failed", throwable);
+        log.debug("Attempt " + context.getRetryCount() + " to query Couchbase has failed", throwable);
     }
 
     @Override

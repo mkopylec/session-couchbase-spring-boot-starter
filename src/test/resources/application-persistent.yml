@@ -1,6 +1,9 @@
-spring.couchbase:
-  bootstrap-hosts: localhost
-  bucket:
-    name: default
-    password:
-  env.timeouts.query: 20000
+spring:
+  couchbase:
+    bootstrap-hosts: localhost
+    bucket:
+      name: default
+      password:
+    env:
+      timeouts:
+        query: 20s

@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Repository;
 
+import static java.lang.Math.toIntExact;
+
 @Repository
 public class QuickSessionExpirationRepository extends CouchbaseSessionRepository {
 
@@ -19,6 +21,6 @@ public class QuickSessionExpirationRepository extends CouchbaseSessionRepository
 
     @Override
     protected int getSessionDocumentExpiration() {
-        return sessionTimeout + 1;
+        return toIntExact(sessionCouchbase.getTimeout().plusSeconds(1).getSeconds());
     }
 }
