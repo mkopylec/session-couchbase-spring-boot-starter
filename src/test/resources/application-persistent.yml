@@ -3,7 +3,7 @@ spring:
     bootstrap-hosts: localhost
     bucket:
       name: default
-      password:
+      password: secret
     env:
       timeouts:
         query: 20s
