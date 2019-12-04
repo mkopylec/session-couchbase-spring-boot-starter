@@ -20,9 +20,4 @@ class MetricsAssertion {
         assert registry.counter(metricsName).count() > 0
         return this
     }
-
-    MetricsAssertion hasCapturedNothing() {
-        assert registry.meters.isEmpty()
-        return this
-    }
 }
