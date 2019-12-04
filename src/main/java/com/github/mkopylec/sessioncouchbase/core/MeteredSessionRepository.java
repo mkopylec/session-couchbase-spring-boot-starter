@@ -16,6 +16,7 @@ import static com.github.mkopylec.sessioncouchbase.core.ResultMetricName.ERROR;
 import static com.github.mkopylec.sessioncouchbase.core.ResultMetricName.FOUND;
 import static com.github.mkopylec.sessioncouchbase.core.ResultMetricName.NOT_FOUND;
 import static com.github.mkopylec.sessioncouchbase.core.ResultMetricName.SAVED;
+import static org.apache.commons.collections4.MapUtils.isNotEmpty;
 
 public class MeteredSessionRepository implements FindByIndexNameSessionRepository<CouchbaseSession> {
 
@@ -83,7 +84,7 @@ public class MeteredSessionRepository implements FindByIndexNameSessionRepositor
     public Map<String, CouchbaseSession> findByIndexNameAndIndexValue(String indexName, String indexValue) {
         try {
             Map<String, CouchbaseSession> sessions = registry.timer(metricNameFactory.create(FIND_SESSION_BY_INDEX_NAME_AND_INDEX_VALUE)).record(() -> delegate.findByIndexNameAndIndexValue(indexName, indexValue));
-            if (sessions != null) {
+            if (isNotEmpty(sessions)) {
                 registry.counter(metricNameFactory.create(FIND_SESSION_BY_INDEX_NAME_AND_INDEX_VALUE, FOUND)).increment();
             } else {
                 registry.counter(metricNameFactory.create(FIND_SESSION_BY_INDEX_NAME_AND_INDEX_VALUE, NOT_FOUND)).increment();

@@ -63,4 +63,14 @@ abstract class MetricsEnabledSpec extends BasicSpec {
                 .hasCapturedLatency('session_couchbase.find_session_by_id')
                 .hasCapturedRate('session_couchbase.find_session_by_id.not_found')
     }
+
+    def "Should collect metrics when reading principal without HTTP sessions"() {
+        when:
+        getPrincipalSessions()
+
+        then:
+        assertThat(registry)
+                .hasCapturedLatency('session_couchbase.find_session_by_index_name_and_index_value')
+                .hasCapturedRate('session_couchbase.find_session_by_index_name_and_index_value.not_found')
+    }
 }
