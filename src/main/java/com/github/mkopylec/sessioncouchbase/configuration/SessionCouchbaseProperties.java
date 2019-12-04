@@ -39,6 +39,11 @@ public class SessionCouchbaseProperties {
      */
     @NestedConfigurationProperty
     private InMemory inMemory = new InMemory();
+    /**
+     * Properties responsible for metrics collecting.
+     */
+    @NestedConfigurationProperty
+    private Metrics metrics = new Metrics();
 
     public Duration getTimeout() {
         return timeout;
@@ -78,6 +83,14 @@ public class SessionCouchbaseProperties {
 
     public void setInMemory(InMemory inMemory) {
         this.inMemory = inMemory;
+    }
+
+    public Metrics getMetrics() {
+        return metrics;
+    }
+
+    public void setMetrics(Metrics metrics) {
+        this.metrics = metrics;
     }
 
     public static class PrincipalSessions {
@@ -145,6 +158,22 @@ public class SessionCouchbaseProperties {
 
         /**
          * Flag for enabling and disabling in-memory mode.
+         */
+        private boolean enabled = false;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+    }
+
+    public static class Metrics {
+
+        /**
+         * Flag for enabling and disabling metrics collecting.
          */
         private boolean enabled = false;
 

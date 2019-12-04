@@ -24,10 +24,10 @@ import org.springframework.retry.support.RetryTemplate;
 @ConditionalOnProperty(name = "session-couchbase.in-memory.enabled", havingValue = "false", matchIfMissing = true)
 public class PersistentConfiguration {
 
-    protected SessionCouchbaseProperties sessionCouchbase;
+    protected SessionCouchbaseProperties properties;
 
-    public PersistentConfiguration(SessionCouchbaseProperties sessionCouchbase) {
-        this.sessionCouchbase = sessionCouchbase;
+    public PersistentConfiguration(SessionCouchbaseProperties properties) {
+        this.properties = properties;
     }
 
     @Bean
@@ -41,7 +41,7 @@ public class PersistentConfiguration {
     public RetryTemplate sessionCouchbaseRetryTemplate(RetryLoggingListener listener) {
         Map<Class<? extends Throwable>, Boolean> retryableExceptions = new HashMap<>(1);
         retryableExceptions.put(Exception.class, true);
-        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(sessionCouchbase.getPersistent().getRetry().getMaxAttempts(), retryableExceptions);
+        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(properties.getPersistent().getRetry().getMaxAttempts(), retryableExceptions);
         RetryTemplate retryTemplate = new RetryTemplate();
         retryTemplate.setRetryPolicy(retryPolicy);
         retryTemplate.registerListener(listener);
@@ -51,6 +51,6 @@ public class PersistentConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public SessionDao sessionDao(CouchbaseTemplate couchbaseTemplate, @Qualifier("sessionCouchbaseRetryTemplate") RetryTemplate retryTemplate) {
-        return new PersistentDao(sessionCouchbase, couchbaseTemplate, retryTemplate);
+        return new PersistentDao(properties, couchbaseTemplate, retryTemplate);
     }
 }
