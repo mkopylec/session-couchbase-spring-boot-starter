@@ -2,41 +2,41 @@ package com.github.mkopylec.sessioncouchbase.assertions
 
 import org.springframework.http.ResponseEntity
 
-class ResponseAssert {
+class ResponseAssertion {
 
     private ResponseEntity actual
 
-    protected ResponseAssert(ResponseEntity actual) {
+    protected ResponseAssertion(ResponseEntity actual) {
         assert actual != null
         this.actual = actual
     }
 
-    ResponseAssert hasSessionIds(String... sessionIds) {
+    ResponseAssertion hasSessionIds(String... sessionIds) {
         hasElements(sessionIds)
     }
 
-    ResponseAssert hasSessionAttributeNames(String... attributeNames) {
+    ResponseAssertion hasSessionAttributeNames(String... attributeNames) {
         return hasElements(attributeNames)
     }
 
-    ResponseAssert hasNoSessionIds() {
+    ResponseAssertion hasNoSessionIds() {
         assert actual.body != null
         def actualSessionIds = actual.body as Set
         assert actualSessionIds.isEmpty()
         return this
     }
 
-    ResponseAssert hasBody(Object body) {
+    ResponseAssertion hasBody(Object body) {
         assert actual.body == body
         return this
     }
 
-    ResponseAssert hasNoBody() {
+    ResponseAssertion hasNoBody() {
         assert actual.body == null
         return this
     }
 
-    private ResponseAssert hasElements(String... elements) {
+    private ResponseAssertion hasElements(String... elements) {
         assert actual.body != null
         def actualSessionIds = actual.body as List
         assert actualSessionIds.size() == elements.size()

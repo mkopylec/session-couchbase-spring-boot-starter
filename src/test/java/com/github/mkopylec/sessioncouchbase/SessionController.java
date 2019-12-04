@@ -1,8 +1,8 @@
 package com.github.mkopylec.sessioncouchbase;
 
 import com.github.mkopylec.sessioncouchbase.core.CouchbaseSession;
-import com.github.mkopylec.sessioncouchbase.core.CouchbaseSessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,7 +32,7 @@ public class SessionController {
     @Autowired(required = false)
     private SessionScopedBean sessionBean;
     @Autowired(required = false)
-    private CouchbaseSessionRepository sessionRepository;
+    private FindByIndexNameSessionRepository<CouchbaseSession> sessionRepository;
 
     @PostMapping("attribute")
     public void setAttribute(@RequestBody Message dto, HttpSession session) {
@@ -114,5 +114,11 @@ public class SessionController {
     @GetMapping("attribute/names")
     public List<String> getAttributeNames(HttpSession session) {
         return list(session.getAttributeNames());
+    }
+
+    @GetMapping("id")
+    public String getSessionId(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        return session != null ? session.getId() : null;
     }
 }

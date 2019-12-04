@@ -1,0 +1,3 @@
+session-couchbase:
+  metrics:
+    enabled: true

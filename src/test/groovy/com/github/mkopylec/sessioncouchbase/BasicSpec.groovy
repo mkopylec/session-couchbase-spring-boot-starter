@@ -5,6 +5,7 @@ import com.github.mkopylec.sessioncouchbase.configuration.SessionCouchbaseProper
 import com.github.mkopylec.sessioncouchbase.data.SessionDao
 import com.github.mkopylec.sessioncouchbase.utils.ApplicationInstance
 import com.github.mkopylec.sessioncouchbase.utils.ApplicationInstanceRunner
+import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties
 import org.springframework.boot.test.context.SpringBootTest
@@ -44,6 +45,8 @@ abstract class BasicSpec extends Specification {
     private CouchbaseTemplate template
     @Autowired
     private SessionDao sessionDao
+    @Autowired(required = false)
+    protected MeterRegistry registry
     @Autowired
     private SessionEventConsumer eventConsumer
     @Autowired
@@ -65,6 +68,7 @@ abstract class BasicSpec extends Specification {
 
     void cleanup() {
         clearSessionCookie()
+        clearMetrics()
         stopExtraApplicationInstance()
     }
 
@@ -191,6 +195,11 @@ abstract class BasicSpec extends Specification {
         return get('session/attribute/names', List, getPort())
     }
 
+    protected String getNonExistingSessionId() {
+        currentSessionCookie = 'SESSION=aW52YWxpZC1pZA=='
+        return get('session/id', String)
+    }
+
     protected void clearSessionCookie() {
         currentSessionCookie = null
     }
@@ -303,6 +312,12 @@ abstract class BasicSpec extends Specification {
         def cookie = parse(cookieHeader)[0]
         if (cookie != null) {
             currentSessionCookie = cookie.toString()
+        }
+    }
+
+    private void clearMetrics() {
+        if (registry != null) {
+            registry.meters.each { registry.remove(it.id) }
         }
     }
 }

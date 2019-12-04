@@ -101,8 +101,7 @@ The starter supports HTTP session namespaces to prevent session attribute's name
 The name of the namespace can be set in _application.yml_ file:
 
 ```yaml
-session-couchbase:
-    application-namespace: <application_namespace>
+session-couchbase.application-namespace: <application_namespace>
 ```
 
 Each web application in a distributed system can have one application namespace under which the application's session attributes are stored.
@@ -142,6 +141,16 @@ public void doSomething(HttpSession session) {
 
 When changing HTTP session ID every attribute is copied to the new session, no matter what namespace it belongs.
 
+## Metrics
+By default no metrics are collected.
+It can be enabled in _application.yml_ file:
+                     
+ ```yaml
+ session-couchbase.metrics.enabled: true
+ ```
+Metrics are collected using [Micrometer](https://micrometer.io/).
+When collecting metrics is enabled a `MeterRegistry` Spring bean must be created.
+
 ## Configuration properties list
 
 ```yaml
@@ -156,6 +165,8 @@ session-couchbase:
             max-attempts: 1 # Maximum number of attempts to repeat a query to Couchbase when an error occurs.
     in-memory:
         enabled: false # Flag for enabling and disabling in-memory mode.
+    metrics:
+        enabled: false # Flag for enabling and disabling metrics collecting.
 ```
 
 ## Examples
