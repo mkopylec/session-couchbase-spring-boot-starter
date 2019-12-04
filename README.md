@@ -165,6 +165,8 @@ session-couchbase:
             max-attempts: 1 # Maximum number of attempts to repeat a query to Couchbase when an error occurs.
     in-memory:
         enabled: false # Flag for enabling and disabling in-memory mode.
+    metrics:
+        enabled: false # Flag for enabling and disabling metrics collecting.
 ```
 
 ## Examples
