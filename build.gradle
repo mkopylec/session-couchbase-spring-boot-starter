@@ -38,7 +38,8 @@ dependencies {
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
     compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
-    compileOnly group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: springBootVersion
+    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: springBootVersion
+    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-autoconfigure-processor', version: springBootVersion
 
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootVersion
     testCompile group: 'org.spockframework', name: 'spock-spring', version: '1.3-groovy-2.5'
